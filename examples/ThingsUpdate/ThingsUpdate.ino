@@ -10,13 +10,14 @@
   Connect analog devices to A0 for ESP 8266, GPIO 34 for ESP 32 and GPIO 26 for Raspberry Pi Pico W using alias ADC_IN. 
 
   Written by Debjyoti Chowdhury for Consentium.
+  
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 
 
-#include <ConsentiumThingsDalton.h>
+#include <ConsentiumThings.h>
 
-ConsentiumThings board; // Create ConsentiumThings object
+ConsentiumThingsDalton board; // Create ConsentiumThings object
 
 const char *ssid = "YOUR_WIFI_SSID"; // Add WiFi SSID
 const char *pass = "YOUR_WIFI_PASSWORD"; // Add WiFi password

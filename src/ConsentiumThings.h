@@ -4,10 +4,10 @@
 #include <ArduinoJson.h>
 #include <PinDefinitions.h>
 
-class ConsentiumThingsDalton{
+class ConsentiumThings{
     public:
-        ConsentiumThingsDalton();
-        ConsentiumThingsDalton(const char*);
+        ConsentiumThings();
+        ConsentiumThings(const char*);
         void beginOTA(const char*, const char*);
         void beginSend(const char*, const char*);
         void beginReceive(const char*, const char*);

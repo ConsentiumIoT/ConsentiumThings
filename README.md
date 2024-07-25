@@ -10,12 +10,12 @@ This project provides a simple example of how to use the Consentium Things IoT b
 
 1. Clone this repository to your local machine.
 2. Install the Arduino IDE.
-3. Connect the ConsentiumThingsDalton board to your computer using a USB cable.
+3. Connect the ConsentiumThings board to your computer using a USB cable.
 4. Open the Arduino IDE and open the `ThingsUpdate.ino` file.
 5. Enter your WiFi SSID and password in the `ssid` and `pass` variables, respectively.
 6. Enter your ConsentiumThings API key in the `ApiKey` variable.
 7. Enter your ConsentiumThings board API key in the `BoardApiKey` variable.
-8. Upload the code to the ConsentiumThingsDalton board.
+8. Upload the code to the ConsentiumThings board.
 9. The board will start reading sensor data and sending it over REST to the ConsentiumThings cloud every 7 seconds.
 
 **Notes:**

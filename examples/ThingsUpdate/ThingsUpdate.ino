@@ -17,7 +17,7 @@
 
 #include <ConsentiumThings.h>
 
-ConsentiumThingsDalton board; // Create ConsentiumThings object
+ConsentiumThings board; // Create ConsentiumThings object
 
 const char *ssid = "YOUR_WIFI_SSID"; // Add WiFi SSID
 const char *pass = "YOUR_WIFI_PASSWORD"; // Add WiFi password

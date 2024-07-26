@@ -1,7 +1,8 @@
 #if defined(ESP32)
     #include <WiFi.h>
     #include <HTTPClient.h>
-    #include <HTTPUpdate.h>    
+    #include <HTTPUpdate.h>  
+    #include <WiFiClientSecure.h>  
     
     #define ledPin 23
     #define BOARD_TYPE "ESP32"
@@ -47,6 +48,26 @@
 
     #define ADC_IN 26 // ADC0
     #define ADC_VREF_mV    3300.0 // in millivolt
+#elif defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_UNO)
+    // Internal definitions
+    #define COMM_BAUD 115200
+    #define INTERVAL_MUL 1000
+    #define MAX_WIFI_ATTEMPTS 200
+    #define WIFI_RETRY_DELAY 100
+
+    // IO definitions
+    #define SCALE 0.488
+    #define IN_4_20_1 A0
+    #define IN_4_20_2 A1
+    #define IN_4_20_3 A2 
+    #define IN_0_10_1 A3
+    #define IN_0_10_2 A4
+    #define IN_0_10_3 A5
+
+    // Precision value
+    #define LOW_PRE 2
+    #define MID_PRE 4
+    #define HIGH_PRE 6
 #endif
 
 #define SELECT_LINES 4
@@ -54,7 +75,7 @@
 
 #define WIFI_DELAY 500
 
-#define NTP_SYNC_WAIT 60
+#define NTP_SYNC_WAIT 8 * 3600 * 2
 
 #define MAX_JSON_SIZE 200
 #define MAX_JSON_SENSOR_DATA_SIZE 50

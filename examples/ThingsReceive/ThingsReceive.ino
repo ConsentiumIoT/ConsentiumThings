@@ -8,14 +8,13 @@
   Connect a LED to GPIO 16 for ESP 8266, GPIO 23 for ESP 32 and GPIO 25 for Raspberry Pi Pico W to indicate the REST events. 
   
   Written by Debjyoti Chowdhury for Consentium.
-  
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 
 
 #include <ConsentiumThings.h>
 
-ConsentiumThingsDalton board; // Create ConsentiumThingsDalton object
+ConsentiumThings board; // Create ConsentiumThings object
 
 const char *ssid = "YOUR_WIFI_SSID"; // Add WiFi SSID
 const char *pass = "YOUR_WIFI_PASSWORD"; // Add WiFi password

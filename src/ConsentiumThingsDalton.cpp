@@ -1,6 +1,9 @@
-#include <ConsentiumThings.h>
-#include <certs/ServerCertificates.h>
-#include <utils/ConsentiumEssentials.h>
+#include "ConsentiumThingsDalton.h"
+
+#if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ESP8266)
+
+#include "certs/ServerCertificates.h"
+#include "utils/ConsentiumEssentials.h"
 
 #if defined(ESP8266)
   X509List cert(consentium_root_ca);
@@ -16,8 +19,8 @@ const int kMUXtable[MUX_IN_LINES][SELECT_LINES] = {
 };
 
 void syncTime(){
-    configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
-    Serial.println(F("Waiting for NTP time sync: "));
+    configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
+    Serial.print(F("Waiting for NTP time sync: "));
     time_t now = time(nullptr);
     while (now < NTP_SYNC_WAIT) {
       delay(500);
@@ -136,7 +139,7 @@ float ConsentiumThingsDalton::busRead(int j) {
 }
 
 const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
-  http.begin(client, versionUrl);
+  http.begin(versionUrl);
   //Serial.println(versionUrl); //Debug
   int httpCode = http.GET();
   static char versionBuffer[128]; // Assuming version won't exceed 128 characters
@@ -154,7 +157,7 @@ void ConsentiumThingsDalton::sendREST(double sensor_data[], const char* sensor_i
     return;
   }
 
-  JsonDocument jsonDocument;
+  DynamicJsonDocument jsonDocument(MAX_JSON_SIZE + sensor_num * MAX_JSON_SENSOR_DATA_SIZE);
 
   // Create a JSON array for sensor data 
   JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
@@ -207,8 +210,9 @@ std::vector<std::pair<double, String>> ConsentiumThingsDalton::receiveREST() {
     Serial.println(F("WiFi not connected. Cannot send REST request."));
     return result;
   }
+  const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 7 * JSON_OBJECT_SIZE(4) + 500;
   
-  JsonDocument jsonDocument;
+  DynamicJsonDocument jsonDocument(capacity);
 
   http.begin(client, receiveUrl);
 
@@ -295,3 +299,4 @@ void ConsentiumThingsDalton::checkAndPerformUpdate() {
   }
 }
 
+#endif

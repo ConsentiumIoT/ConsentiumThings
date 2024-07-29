@@ -18,7 +18,7 @@
 
 #define FIRMWARE_VERSION "0.1"
 
-ConsentiumThings board(FIRMWARE_VERSION); // Create ConsentiumThings object with firmware version
+ConsentiumThingsDalton board(FIRMWARE_VERSION); // Create ConsentiumThings object with firmware version
 
 const char *ssid = "YOUR_WIFI_SSID"; // Add WiFi SSID
 const char *pass = "YOUR_WIFI_PASSWORD"; // Add WiFi password

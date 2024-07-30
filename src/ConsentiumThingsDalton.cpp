@@ -139,7 +139,7 @@ float ConsentiumThingsDalton::busRead(int j) {
 }
 
 const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
-  http.begin(versionUrl);
+  http.begin(client, versionUrl);
   //Serial.println(versionUrl); //Debug
   int httpCode = http.GET();
   static char versionBuffer[128]; // Assuming version won't exceed 128 characters
@@ -210,7 +210,9 @@ std::vector<std::pair<double, String>> ConsentiumThingsDalton::receiveREST() {
     Serial.println(F("WiFi not connected. Cannot send REST request."));
     return result;
   }
-  const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 7 * JSON_OBJECT_SIZE(4) + 500;
+  // const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 7 * JSON_OBJECT_SIZE(4) + 500; //Decricated Arduino JSON syntax
+
+  const size_t capacity = 1024;
   
   DynamicJsonDocument jsonDocument(capacity);
 

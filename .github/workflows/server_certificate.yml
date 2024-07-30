@@ -41,4 +41,4 @@ jobs:
         git remote set-url origin https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }}
         git add src/certs/ServerCertificates.h
         git commit -m 'Update server certificates'
-        git push
+        git push https://x-access-token:${{ secrets.PERSONAL_ACCESS_TOKEN }}@github.com/${{ github.repository }} HEAD:main

@@ -19,8 +19,8 @@ const int kMUXtable[MUX_IN_LINES][SELECT_LINES] = {
 };
 
 void syncTime(){
-    configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
-    Serial.print(F("Waiting for NTP time sync: "));
+    configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
+    Serial.println(F("Waiting for NTP time sync: "));
     time_t now = time(nullptr);
     while (now < NTP_SYNC_WAIT) {
       delay(500);
@@ -157,7 +157,7 @@ void ConsentiumThingsDalton::sendREST(double sensor_data[], const char* sensor_i
     return;
   }
 
-  DynamicJsonDocument jsonDocument(MAX_JSON_SIZE + sensor_num * MAX_JSON_SENSOR_DATA_SIZE);
+  JsonDocument jsonDocument;
 
   // Create a JSON array for sensor data 
   JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
@@ -210,11 +210,8 @@ std::vector<std::pair<double, String>> ConsentiumThingsDalton::receiveREST() {
     Serial.println(F("WiFi not connected. Cannot send REST request."));
     return result;
   }
-  // const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 7 * JSON_OBJECT_SIZE(4) + 500; //Decricated Arduino JSON syntax
-
-  const size_t capacity = 1024;
   
-  DynamicJsonDocument jsonDocument(capacity);
+  JsonDocument jsonDocument;
 
   http.begin(client, receiveUrl);
 

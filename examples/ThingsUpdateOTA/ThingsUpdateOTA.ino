@@ -31,9 +31,9 @@ const int updateInterval = 100; // Check for update after 100 cycles
 int loopCounter = 0; // Counter to keep track of loop cycles
 
 void setup() {
+  board.initWiFi(ssid, pass); // Begin WiFi connection
   board.beginSend(SendApiKey, BoardApiKey); // Initialize IoT board
   board.beginOTA(ReceiveApiKey, BoardApiKey); // Enable OTA updates
-  board.initWiFi(ssid, pass); // Begin WiFi connection
 }
 
 void loop(){

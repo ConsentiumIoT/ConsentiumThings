@@ -25,8 +25,8 @@ const char *SendApiKey = "YOUR_API_KEY"; // Send API key
 const char *BoardApiKey = "YOUR_BOARD_API_KEY"; // Board API key
 
 void setup() {
-  board.beginSend(SendApiKey, BoardApiKey); // Initialize IoT board
   board.initWiFi(ssid, pass); // Begin WiFi connection
+  board.beginSend(SendApiKey, BoardApiKey); // Initialize IoT board
 }
 
 void loop(){

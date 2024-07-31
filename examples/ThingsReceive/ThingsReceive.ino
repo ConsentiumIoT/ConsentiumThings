@@ -23,8 +23,8 @@ const char *ReceiveApiKey = "YOUR_API_KEY"; // Receive API key
 const char *BoardApiKey = "YOUR_BOARD_API_KEY"; // Board API key
 
 void setup() {
-  board.beginReceive(ReceiveApiKey, BoardApiKey); // Initialize IoT board to receive data
   board.initWiFi(ssid, pass); // Begin WiFi connection
+  board.beginReceive(ReceiveApiKey, BoardApiKey); // Initialize IoT board to receive data
 }
 
 void loop(){

@@ -151,7 +151,7 @@ const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
   }
 }
 
-void ConsentiumThingsDalton::sendREST(double sensor_data[], const char* sensor_info[], int sensor_num, int precision) {
+void ConsentiumThingsDalton::sendData(double sensor_data[], const char* sensor_info[], int sensor_num, int precision) {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("WiFi not connected. Cannot send REST request."));
     return;
@@ -203,7 +203,7 @@ void ConsentiumThingsDalton::sendREST(double sensor_data[], const char* sensor_i
   http.end();
 }
 
-std::vector<std::pair<double, String>> ConsentiumThingsDalton::receiveREST() {
+std::vector<std::pair<double, String>> ConsentiumThingsDalton::receiveData() {
   std::vector<std::pair<double, String>> result;
 
   if (WiFi.status() != WL_CONNECTED) {

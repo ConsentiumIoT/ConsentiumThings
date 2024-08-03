@@ -15,7 +15,7 @@ class ConsentiumThingsBeta{
         ConsentiumThingsBeta();
         void beginSend(const char*, const char*);
         void initWiFi(const char*, const char*);
-        void sendREST(float[], const char*[], int, int);
+        void sendData(float[], const char*[], int, int);
     private:
         const char* key;
         const char* board_key;

@@ -14,8 +14,8 @@ class ConsentiumThingsDalton{
         void beginSend(const char*, const char*);
         void beginReceive(const char*, const char*);
         void initWiFi(const char*, const char*);
-        void sendREST(double [], const char* [], int, int); 
-        std::vector<std::pair<double, String>> receiveREST();
+        void sendData(double [], const char* [], int, int); 
+        std::vector<std::pair<double, String>> receiveData();
         void checkAndPerformUpdate();
         float busRead(int); 
     private:

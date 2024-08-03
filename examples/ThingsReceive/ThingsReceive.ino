@@ -29,7 +29,7 @@ void setup() {
 
 void loop(){
   // get sensor data from server
-  auto dataPairs = board.receiveREST(); 
+  auto dataPairs = board.receiveData(); 
   
   //print sensor data from server
   for(size_t i=0; i<dataPairs.size(); i++){

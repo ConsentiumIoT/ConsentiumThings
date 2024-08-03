@@ -16,7 +16,7 @@
 
 #include <ConsentiumThings.h>
 
-#define FIRMWARE_VERSION "0.1"
+#define FIRMWARE_VERSION "0.0"
 
 ConsentiumThingsDalton board(FIRMWARE_VERSION); // Create ConsentiumThings object with firmware version
 
@@ -44,7 +44,7 @@ void loop(){
   
   int sensorCount = sizeof(sensorValues)/sizeof(sensorValues[0]); // number of sensors connected 
   
-  board.sendREST(sensorValues, sensorInfo, sensorCount, LOW_PRE); // send over REST with delay with desired prescision
+  board.sendData(sensorValues, sensorInfo, sensorCount, LOW_PRE); // send over REST with delay with desired prescision
 
   loopCounter++;
   if (loopCounter >= updateInterval) {

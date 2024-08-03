@@ -34,7 +34,7 @@ void loop(){
   
   int sensorCount = sizeof(sensorValues)/sizeof(sensorValues[0]); // number of sensors connected 
   
-  board.sendREST(sensorValues, sensorInfo, sensorCount, LOW_PRE); // send over REST with delay
+  board.sendData(sensorValues, sensorInfo, sensorCount, LOW_PRE); // send over REST with delay
 
   delay(interval);
 }

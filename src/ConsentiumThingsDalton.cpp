@@ -9,15 +9,6 @@
   X509List cert(consentium_root_ca);
 #endif
 
-const int kselect_lines[SELECT_LINES] = {S_0, S_1, S_2, S_3}; // MUX select lines
-
-const int kMUXtable[MUX_IN_LINES][SELECT_LINES] = {
-  {0, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {1, 1, 0, 0},
-  {0, 0, 1, 0}, {1, 0, 1, 0}, {0, 1, 1, 0}, {1, 1, 1, 0},
-  {0, 0, 0, 1}, {1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1},
-  {0, 0, 1, 1}, {1, 0, 1, 1}, {0, 1, 1, 1}, {1, 1, 1, 1}
-};
-
 void syncTime(){
     configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
     Serial.println(F("Waiting for NTP time sync: "));
@@ -29,7 +20,6 @@ void syncTime(){
     struct tm timeinfo;
     gmtime_r(&now, &timeinfo); 
 }
-
 void toggleLED() {
     static bool ledState = false;
     digitalWrite(ledPin, ledState);
@@ -38,6 +28,22 @@ void toggleLED() {
 
 ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {} // Default constructor without firmware version
 ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {} //Constructor when firmware version is passed
+
+void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
+  WiFi.mode(WIFI_STA);
+  
+  Serial.print(F("Attempting to connect SSID: "));
+  Serial.println(ssid);
+  
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(WIFI_DELAY);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print(F("Got IP : "));
+  Serial.println(WiFi.localIP());
+}
 
 // Function for sending URL
 void ConsentiumThingsDalton::beginSend(const char* key, const char* board_id) {
@@ -59,9 +65,15 @@ void ConsentiumThingsDalton::beginSend(const char* key, const char* board_id) {
   sendUrl.concat("&boardkey=");
   sendUrl.concat(String(board_id));
 
-  for (int i = 0; i < SELECT_LINES; i++) {
-      pinMode(kselect_lines[i], OUTPUT);
+  delay(I2C_DELAY);
+
+  if (!ads_1.begin(currentADCAddr)) {
+    Serial.println("Failed to initialize current ADC at 0x48");
   }
+  if (!ads_2.begin(voltageADCAddr)) {
+    Serial.println("Failed to initialize voltage ADC at 0x49");
+  }
+
 }
 
 // Function for receiving URL
@@ -114,30 +126,6 @@ void ConsentiumThingsDalton::beginOTA(const char* key, const char* board_id) {
   firmwareUrl.concat(String(board_id));
 }
 
-
-void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
-  WiFi.mode(WIFI_STA);
-  
-  Serial.print(F("Attempting to connect SSID: "));
-  Serial.println(ssid);
-  
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(WIFI_DELAY);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.print(F("Got IP : "));
-  Serial.println(WiFi.localIP());
-}
-
-float ConsentiumThingsDalton::busRead(int j) {
-  for (int i = 0; i < SELECT_LINES; i++) {
-    digitalWrite(kselect_lines[i], kMUXtable[j][i]);
-  }
-  return analogRead(ADC_IN);
-}
-
 const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
   http.begin(client, versionUrl);
   //Serial.println(versionUrl); //Debug
@@ -151,7 +139,10 @@ const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
   }
 }
 
-void ConsentiumThingsDalton::sendData(double sensor_data[], const char* sensor_info[], int sensor_num, int precision) {
+void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* sensor_info[], int precision) {
+
+  int sensor_num = sensor_data.size();
+
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("WiFi not connected. Cannot send REST request."));
     return;
@@ -203,8 +194,16 @@ void ConsentiumThingsDalton::sendData(double sensor_data[], const char* sensor_i
   http.end();
 }
 
-std::vector<std::pair<double, String>> ConsentiumThingsDalton::receiveData() {
-  std::vector<std::pair<double, String>> result;
+double ConsentiumThingsDalton::readCurrentBus(int cpin){
+  return ads_1.readADC_SingleEnded(cpin)*multiplier;
+}
+
+double ConsentiumThingsDalton::readVoltageBus(int vpin){
+  return ads_2.readADC_SingleEnded(vpin)*multiplier;
+}
+
+vector<pair<double, String>> ConsentiumThingsDalton::receiveData() {
+  vector<pair<double, String>> result;
 
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("WiFi not connected. Cannot send REST request."));

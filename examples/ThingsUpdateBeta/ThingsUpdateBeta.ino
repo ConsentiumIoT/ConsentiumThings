@@ -1,11 +1,11 @@
 /***************************************************
   This is Consentium Inc's IoT library
-  ----> http://consentiuminc.online/
+  ----> http://docs.consentiuminc.online/
   Check out the links above for our tutorials and product diagrams.
 
   This Consentium Inc's IoT library works only for 5v tolerant Edge Beta boards. 
  
-  Written by Debjyoti Chowdhury for Consentium Inc.
+  Written by Debjyoti Chowdhury for Consentium IoT.
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 

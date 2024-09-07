@@ -5,6 +5,9 @@
 
 #include <ArduinoJson.h>
 #include <PinDefinitions.h>
+#include <vector>
+
+using namespace std;
 
 class ConsentiumThingsDalton{
     public:
@@ -14,13 +17,17 @@ class ConsentiumThingsDalton{
         void beginSend(const char*, const char*);
         void beginReceive(const char*, const char*);
         void initWiFi(const char*, const char*);
-        void sendData(double [], const char* [], int, int); 
-        std::vector<std::pair<double, String>> receiveData();
+        void sendData(vector<double>, const char* [], int);
+        double readCurrentBus(int);
+        double readVoltageBus(int);
+        vector<pair<double, String>> receiveData();
         void checkAndPerformUpdate();
-        float busRead(int); 
     private:
         WiFiClientSecure client;
         HTTPClient http;
+        Adafruit_ADS1115 ads_1;
+        Adafruit_ADS1115 ads_2;
+
         String sendUrl;
         String receiveUrl; 
         String versionUrl;

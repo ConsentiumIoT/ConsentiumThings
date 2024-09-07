@@ -1,6 +1,6 @@
 /***************************************************
   This is Consentium's IoT library
-  ----> https://consentiuminc.online/
+  ----> https://docs.consentiuminc.online/
   Check out the links above for our tutorials and product diagrams.
 
   This Consentium's IoT library works only for ESP8266/ESP32/Raspberry Pi Pico W compatible Edge boards. 
@@ -9,7 +9,7 @@
   
   Connect analog devices to A0 for ESP 8266, GPIO 34 for ESP 32 and GPIO 26 for Raspberry Pi Pico W using alias ADC_IN. 
 
-  Written by Debjyoti Chowdhury for Consentium.
+  Written by Debjyoti Chowdhury for Consentium IoT.
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 
@@ -37,14 +37,12 @@ void setup() {
 }
 
 void loop(){
-  double data_0 = board.busRead(0);  // read voltage data
+  double data_0 = 1.0;  // send sample data
   
-  double sensorValues[] = {data_0};  // sensor data array
+  vector <double> sensorValues = {data_0};  // sensor data vector
   const char* sensorInfo[] = {"Temperature"}; // sensor info. array
-  
-  int sensorCount = sizeof(sensorValues)/sizeof(sensorValues[0]); // number of sensors connected 
-  
-  board.sendData(sensorValues, sensorInfo, sensorCount, LOW_PRE); // send over REST with delay with desired prescision
+     
+  board.sendData(sensorValues, sensorInfo, LOW_PRE); // send over REST with delay with desired prescision
 
   loopCounter++;
   if (loopCounter >= updateInterval) {

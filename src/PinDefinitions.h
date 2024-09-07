@@ -1,53 +1,62 @@
 #if defined(ESP32)
     #include <WiFi.h>
+    #include <Wire.h>
     #include <HTTPClient.h>
     #include <HTTPUpdate.h>  
-    #include <WiFiClientSecure.h>  
+    #include <WiFiClientSecure.h>
+    #include <Adafruit_ADS1X15.h>
     
-    #define ledPin 23
-    #define BOARD_TYPE "ESP32"
-
-    #define S_0 21
-    #define S_1 19
-    #define S_2 18
-    #define S_3 5    
+    #ifdef CONFIG_IDF_TARGET_ESP32C3
+        #define ledPin LED_BUILTIN 
+        #define BOARD_TYPE "ESP32-C3"
+    #else
+        #define ledPin 23
+        #define BOARD_TYPE "ESP32"
+    #endif
+ 
     #define ADC_IN 34 // ADC1_CH6
-
     #define ADC_VREF_mV    3300.0 // in millivolt
     #define ADC_RESOLUTION 4096.0
+
+    const float multiplier = 0.1875F;
+
+    #define currentADCAddr 0x48
+    #define voltageADCAddr 0x49
 #elif defined(ESP8266)
+    #include <Wire.h>
     #include <ESP8266WiFi.h>
     #include <ESP8266HTTPClient.h>
     #include <ESP8266httpUpdate.h>
     #include <WiFiClientSecure.h>
+    #include <Adafruit_ADS1X15.h>
 
     #define ledPin 16
     #define BOARD_TYPE "ESP8266"
             
-    #define S_0 14 
-    #define S_1 12
-    #define S_2 13
-    #define S_3 15  
     #define ADC_IN A0 // A0
-
     #define ADC_VREF_mV    3300.0 // in millivolt
     #define ADC_RESOLUTION 1024.0
+
+    const float multiplier = 0.1875F;
+    #define currentADCAddr 0x48
+    #define voltageADCAddr 0x49
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
+    #include <Wire.h>
     #include <WiFi.h>
     #include <HTTPClient.h>
     #include <HTTPUpdate.h>
     #include <WiFiClientSecure.h>
+    #include <Adafruit_ADS1X15.h>
     
     #define ledPin LED_BUILTIN
     #define BOARD_TYPE "RASPBERRY-PI-PICO-W"
 
-    #define S_0 18 
-    #define S_1 19
-    #define S_2 20
-    #define S_3 21
-
     #define ADC_IN 26 // ADC0
     #define ADC_VREF_mV    3300.0 // in millivolt
+
+    const float multiplier = 0.1875F;
+    #define currentADCAddr 0x48
+    #define voltageADCAddr 0x49
 #elif defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_UNO)
     // Internal definitions
     #define COMM_BAUD 115200
@@ -70,10 +79,9 @@
     #define HIGH_PRE 6
 #endif
 
-#define SELECT_LINES 4
-#define MUX_IN_LINES 16
 
 #define WIFI_DELAY 500
+#define I2C_DELAY 1000
 
 #define NTP_SYNC_WAIT 8 * 3600 * 2
 

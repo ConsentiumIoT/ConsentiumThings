@@ -1,8 +1,10 @@
 #if defined(ESP32)
     #include <WiFi.h>
     #include <Wire.h>
+    #include <vector>
     #include <HTTPClient.h>
-    #include <HTTPUpdate.h>  
+    #include <HTTPUpdate.h> 
+    #include <ArduinoJson.h> 
     #include <WiFiClientSecure.h>
     #include <Adafruit_ADS1X15.h>
     
@@ -24,7 +26,9 @@
     #define voltageADCAddr 0x49
 #elif defined(ESP8266)
     #include <Wire.h>
+    #include <vector>
     #include <ESP8266WiFi.h>
+    #include <ArduinoJson.h>
     #include <ESP8266HTTPClient.h>
     #include <ESP8266httpUpdate.h>
     #include <WiFiClientSecure.h>
@@ -43,6 +47,8 @@
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
     #include <Wire.h>
     #include <WiFi.h>
+    #include <vector>
+    #include <ArduinoJson.h>
     #include <HTTPClient.h>
     #include <HTTPUpdate.h>
     #include <WiFiClientSecure.h>

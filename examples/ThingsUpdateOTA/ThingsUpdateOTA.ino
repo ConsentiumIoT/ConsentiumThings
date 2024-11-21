@@ -1,7 +1,7 @@
 /***************************************************
   This is Consentium's IoT library
-  ----> https://docs.consentiuminc.online/
-  Check out the links above for our tutorials and product diagrams.
+  
+  Check out https://docs.consentiumiot.com for our tutorials and documentation.
 
   This Consentium's IoT library works only for ESP8266/ESP32/Raspberry Pi Pico W compatible Edge boards. 
   
@@ -9,7 +9,7 @@
   
   Connect analog devices to A0 for ESP 8266, GPIO 34 for ESP 32 and GPIO 26 for Raspberry Pi Pico W using alias ADC_IN. 
 
-  Written by Debjyoti Chowdhury for Consentium IoT.
+  Written to us at official@consentiumiot.com.
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 

@@ -8,6 +8,7 @@
   Connect an LED to GPIO 16 for ESP 8266, GPIO 23 for ESP 32 and GPIO 25 for Raspberry Pi Pico W to indicate the REST events. 
   
   Write to us at official@consentiumiot.com.
+  
   MIT license, all text above must be included in any redistribution
  ****************************************************/
 

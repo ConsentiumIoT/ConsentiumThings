@@ -42,7 +42,7 @@ void ConsentiumThingsBeta::initWiFi(const char* ssid, const char* password) {
 }
 
 
-void ConsentiumThingsBeta::sendREST(float data[], const char* info[], int sensor_num, int pre) {
+void ConsentiumThingsBeta::sendData(float data[], const char* info[], int sensor_num, int pre) {
     const char* ip = "consentiuminc.online";
     const char* port = "443";
 

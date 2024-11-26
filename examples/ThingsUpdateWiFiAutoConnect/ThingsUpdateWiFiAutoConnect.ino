@@ -26,10 +26,6 @@
 // Create ConsentiumThings object
 ConsentiumThingsDalton board;
 
-// Define WiFi credentials
-const char *ssid = "YOUR_WIFI_SSID";      // WiFi SSID
-const char *pass = "YOUR_WIFI_PASSWORD";  // WiFi password
-
 // Define API keys
 const char *SendApiKey = "YOUR_API_KEY";      // API key for sending data
 const char *BoardApiKey = "YOUR_BOARD_API_KEY"; // API key for the board
@@ -43,8 +39,8 @@ void setup() {
   Serial.println("------------------------------------");
   Serial.println("Initializing ConsentiumThings Board...");
 
-  // Begin WiFi connection
-  board.initWiFi(ssid, pass);
+  // Initialize WiFi with auto-connect feature
+  board.initWiFiAutoConnect();
 
   // Initialize the board for sending data
   board.beginSend(SendApiKey, BoardApiKey);

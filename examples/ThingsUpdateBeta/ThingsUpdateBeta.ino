@@ -1,40 +1,70 @@
 /***************************************************
-  This is Consentium Inc's IoT library
-  ----> http://consentiuminc.online/
-  Check out the links above for our tutorials and product diagrams.
+  Consentium IoT - Edge Beta Board Library
+  -------------------------------------------------
+  This library is designed for use with Consentium IoT's 
+  5V tolerant Edge Beta boards.
 
-  This Consentium Inc's IoT library works only for 5v tolerant Edge Beta boards. 
- 
-  Written by Debjyoti Chowdhury for Consentium Inc.
-  MIT license, all text above must be included in any redistribution
+  Features:
+  - Seamless WiFi connectivity
+  - REST-based data transmission to the Consentium IoT Cloud
+  - Compatible with 4-20mA and 0-10V sensor interfaces
+
+  Tutorials and Documentation:
+  Visit us at: https://docs.consentiumiot.com
+
+  For Support:
+  Email: official@consentiumiot.com
+
+  MIT license - Redistribution must include this header.
  ****************************************************/
-
 
 #include <ConsentiumThings.h>
 
-ConsentiumThingsBeta board;   // create ConsentiumThing beta object
+// Create a ConsentiumThings Beta object
+ConsentiumThingsBeta board;
 
-const char *ssid = "YOUR_WIFI_SSID"; // Add WiFi SSID
-const char *pass = "YOUR_WIFI_PASSWORD"; // Add WiFi password
-constexpr int interval = 7000; // Wait for 7 seconds
-const char *SendApiKey = "YOUR_API_KEY"; // Send API key
-const char *BoardApiKey = "YOUR_BOARD_API_KEY"; // Board API key
+// WiFi credentials
+const char *ssid = "YOUR_WIFI_SSID";       // Replace with your WiFi SSID
+const char *pass = "YOUR_WIFI_PASSWORD";   // Replace with your WiFi password
+const char *SendApiKey = "YOUR_API_KEY";      // API key for sending data
+const char *BoardApiKey = "YOUR_BOARD_API_KEY"; // API key for the board
 
-void setup(){
-  board.beginSend(SendApiKey, BoardApiKey);   // init. IoT boad
-  board.initWiFi(ssid, pass);  // begin WiFi connection
+// Data transmission interval
+constexpr int interval = 7000; // 7 seconds
+
+void setup() {
+  // Consentium IoT branding message
+  Serial.println("Consentium IoT - Edge Beta Board Library");
+  Serial.println("-----------------------------------------");
+  Serial.println("Initializing ConsentiumThings Beta Board...");
+
+  // Begin WiFi connection
+  board.initWiFi(ssid, pass);
+
+  // Initialize the board for sending data
+  board.beginSend(SendApiKey, BoardApiKey);
+
+  Serial.println("ConsentiumThings Beta Board Initialized!");
+  Serial.println("-----------------------------------------");
+  Serial.println();
 }
 
-void loop(){
-  float data_0 = analogRead(IN_4_20_1)*SCALE; // Read 4-20mA sensor data form J1 port 1
-  float data_1 = analogRead(IN_0_10_1)*SCALE; // Read 0-10V sensor data form J2 port 1
+void loop() {
+  // Read 4-20mA sensor data from J1 Port 1
+  float data_0 = analogRead(IN_4_20_1) * SCALE; 
+  // Read 0-10V sensor data from J2 Port 1
+  float data_1 = analogRead(IN_0_10_1) * SCALE; 
 
-  float sensorValues[] = {data_0, data_1};  // sensor data array
-  const char* sensorInfo[] = {"Temperature", "Pressure"}; // sensor info. array
-  
-  int sensorCount = sizeof(sensorValues)/sizeof(sensorValues[0]); // number of sensors connected 
-  
-  board.sendREST(sensorValues, sensorInfo, sensorCount, LOW_PRE); // send over REST with delay
+  // Prepare sensor data and info arrays
+  float sensorValues[] = {data_0, data_1};  
+  const char* sensorInfo[] = {"Temperature", "Pressure"}; 
 
+  // Calculate the number of sensors
+  int sensorCount = sizeof(sensorValues) / sizeof(sensorValues[0]); 
+
+  // Send sensor data to Consentium IoT Cloud
+  board.sendData(sensorValues, sensorInfo, sensorCount, LOW_PRE); 
+
+  // Wait for the next data transmission
   delay(interval);
 }

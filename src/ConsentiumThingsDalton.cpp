@@ -9,18 +9,9 @@
   X509List cert(consentium_root_ca);
 #endif
 
-const int kselect_lines[SELECT_LINES] = {S_0, S_1, S_2, S_3}; // MUX select lines
-
-const int kMUXtable[MUX_IN_LINES][SELECT_LINES] = {
-  {0, 0, 0, 0}, {1, 0, 0, 0}, {0, 1, 0, 0}, {1, 1, 0, 0},
-  {0, 0, 1, 0}, {1, 0, 1, 0}, {0, 1, 1, 0}, {1, 1, 1, 0},
-  {0, 0, 0, 1}, {1, 0, 0, 1}, {0, 1, 0, 1}, {1, 1, 0, 1},
-  {0, 0, 1, 1}, {1, 0, 1, 1}, {0, 1, 1, 1}, {1, 1, 1, 1}
-};
-
 void syncTime(){
-    configTime(3 * 3600, 0, "pool.ntp.org", "time.nist.gov");
-    Serial.print(F("Waiting for NTP time sync: "));
+    configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
+    Serial.println(F("Waiting for NTP time sync: "));
     time_t now = time(nullptr);
     while (now < NTP_SYNC_WAIT) {
       delay(500);
@@ -29,7 +20,6 @@ void syncTime(){
     struct tm timeinfo;
     gmtime_r(&now, &timeinfo); 
 }
-
 void toggleLED() {
     static bool ledState = false;
     digitalWrite(ledPin, ledState);
@@ -38,6 +28,41 @@ void toggleLED() {
 
 ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {} // Default constructor without firmware version
 ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {} //Constructor when firmware version is passed
+
+void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
+  WiFi.mode(WIFI_STA);
+  
+  Serial.print(F("Attempting to connect SSID: "));
+  Serial.println(ssid);
+  
+  WiFi.begin(ssid, password);
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(WIFI_DELAY);
+    Serial.print(".");
+  }
+  Serial.println("");
+  Serial.print(F("Got IP : "));
+  Serial.println(WiFi.localIP());
+}
+
+void ConsentiumThingsDalton::initWiFiAutoConnect(const char* apName, const char* apPassword) {
+    // Create a WiFiManager instance
+    WiFiManager wm;
+
+    // Attempt auto-connect with specified AP name and password
+    bool res = wm.autoConnect(apName, apPassword);
+
+    // Check if connection was successful
+    if (!res) {
+        Serial.println(F("Failed to connect to WiFi. Restarting..."));
+        delay(3000);
+        ESP.restart(); // Restart the device to retry
+    } else {
+        Serial.println(F("Connected to WiFi successfully!"));
+        Serial.print(F("Device IP: "));
+        Serial.println(WiFi.localIP());
+    }
+}
 
 // Function for sending URL
 void ConsentiumThingsDalton::beginSend(const char* key, const char* board_id) {
@@ -59,9 +84,15 @@ void ConsentiumThingsDalton::beginSend(const char* key, const char* board_id) {
   sendUrl.concat("&boardkey=");
   sendUrl.concat(String(board_id));
 
-  for (int i = 0; i < SELECT_LINES; i++) {
-      pinMode(kselect_lines[i], OUTPUT);
+  delay(I2C_DELAY);
+
+  if (!ads_1.begin(currentADCAddr)) {
+    Serial.println("Failed to initialize current ADC at 0x48");
   }
+  if (!ads_2.begin(voltageADCAddr)) {
+    Serial.println("Failed to initialize voltage ADC at 0x49");
+  }
+
 }
 
 // Function for receiving URL
@@ -114,32 +145,8 @@ void ConsentiumThingsDalton::beginOTA(const char* key, const char* board_id) {
   firmwareUrl.concat(String(board_id));
 }
 
-
-void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
-  WiFi.mode(WIFI_STA);
-  
-  Serial.print(F("Attempting to connect SSID: "));
-  Serial.println(ssid);
-  
-  WiFi.begin(ssid, password);
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(WIFI_DELAY);
-    Serial.print(".");
-  }
-  Serial.println("");
-  Serial.print(F("Got IP : "));
-  Serial.println(WiFi.localIP());
-}
-
-float ConsentiumThingsDalton::busRead(int j) {
-  for (int i = 0; i < SELECT_LINES; i++) {
-    digitalWrite(kselect_lines[i], kMUXtable[j][i]);
-  }
-  return analogRead(ADC_IN);
-}
-
 const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
-  http.begin(versionUrl);
+  http.begin(client, versionUrl);
   //Serial.println(versionUrl); //Debug
   int httpCode = http.GET();
   static char versionBuffer[128]; // Assuming version won't exceed 128 characters
@@ -151,13 +158,16 @@ const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
   }
 }
 
-void ConsentiumThingsDalton::sendREST(double sensor_data[], const char* sensor_info[], int sensor_num, int precision) {
+void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* sensor_info[], int precision) {
+
+  int sensor_num = sensor_data.size();
+
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("WiFi not connected. Cannot send REST request."));
     return;
   }
 
-  DynamicJsonDocument jsonDocument(MAX_JSON_SIZE + sensor_num * MAX_JSON_SENSOR_DATA_SIZE);
+  JsonDocument jsonDocument;
 
   // Create a JSON array for sensor data 
   JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
@@ -203,16 +213,23 @@ void ConsentiumThingsDalton::sendREST(double sensor_data[], const char* sensor_i
   http.end();
 }
 
-std::vector<std::pair<double, String>> ConsentiumThingsDalton::receiveREST() {
-  std::vector<std::pair<double, String>> result;
+double ConsentiumThingsDalton::readCurrentBus(int cpin){
+  return ads_1.readADC_SingleEnded(cpin)*multiplier;
+}
+
+double ConsentiumThingsDalton::readVoltageBus(int vpin){
+  return ads_2.readADC_SingleEnded(vpin)*multiplier;
+}
+
+vector<pair<double, String>> ConsentiumThingsDalton::receiveData() {
+  vector<pair<double, String>> result;
 
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(F("WiFi not connected. Cannot send REST request."));
     return result;
   }
-  const size_t capacity = JSON_ARRAY_SIZE(1) + JSON_OBJECT_SIZE(1) + 7 * JSON_OBJECT_SIZE(4) + 500;
   
-  DynamicJsonDocument jsonDocument(capacity);
+  JsonDocument jsonDocument;
 
   http.begin(client, receiveUrl);
 

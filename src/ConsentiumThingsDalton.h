@@ -3,8 +3,10 @@
 
 #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ESP8266)
 
-#include <ArduinoJson.h>
+
 #include <PinDefinitions.h>
+
+using namespace std;
 
 class ConsentiumThingsDalton{
     public:
@@ -14,13 +16,18 @@ class ConsentiumThingsDalton{
         void beginSend(const char*, const char*);
         void beginReceive(const char*, const char*);
         void initWiFi(const char*, const char*);
-        void sendREST(double [], const char* [], int, int); 
-        std::vector<std::pair<double, String>> receiveREST();
+        void initWiFiAutoConnect(const char* apName = "ConsentiumIoT_AP", const char* apPassword = "Consentium2024");
+        void sendData(vector<double>, const char* [], int);
+        double readCurrentBus(int);
+        double readVoltageBus(int);
+        vector<pair<double, String>> receiveData();
         void checkAndPerformUpdate();
-        float busRead(int); 
     private:
         WiFiClientSecure client;
         HTTPClient http;
+        Adafruit_ADS1115 ads_1;
+        Adafruit_ADS1115 ads_2;
+
         String sendUrl;
         String receiveUrl; 
         String versionUrl;

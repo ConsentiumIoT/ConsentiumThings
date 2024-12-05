@@ -1,4 +1,4 @@
-# ConsentiumThingsDalton
+# ConsentiumThings
 
 **Version:** v2.1.4  
 

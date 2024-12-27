@@ -201,18 +201,29 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
   if (httpCode > 0) {
     if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
       String response = http.getString();
-      String combinedOutput = "Server response: " + response + " with code: " + String(httpCode) + "\nData packet: " + jsonString + "\n";
-      Serial.println(combinedOutput);
+
+      // Print a more human-readable message
+      Serial.println(" ");
+      Serial.println("Data successfully sent to the server!");
+      // Serial.println("Here are the details:");
+      
+      Serial.println("Sensor Data:");
+      for (int i = 0; i < sensor_num; i++) {
+        Serial.println(" - " + String(sensor_info[i]) + ": " + String(sensor_data[i], precision));
+      }
+
+      Serial.println("Board Information:");
+      Serial.println(" - Firmware Version: " + String(firmwareVersion));
+      Serial.println(" - Architecture: " + String(BOARD_TYPE));
+      Serial.println(" ");
       toggleLED();
     }
-  } 
-  else {
+  } else {
     Serial.println(F("HTTP POST request failed."));
   }
   // Close the HTTP connection
   http.end();
 }
-
 double ConsentiumThingsDalton::readCurrentBus(int cpin){
   return ads_1.readADC_SingleEnded(cpin)*multiplier;
 }

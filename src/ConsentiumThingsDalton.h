@@ -12,6 +12,7 @@ class ConsentiumThingsDalton{
     public:
         ConsentiumThingsDalton();
         ConsentiumThingsDalton(const char*);
+        void beginSense();
         void beginOTA(const char*, const char*);
         void beginSend(const char*, const char*);
         void beginReceive(const char*, const char*);

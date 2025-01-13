@@ -29,6 +29,25 @@ void toggleLED() {
 ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {} // Default constructor without firmware version
 ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {} //Constructor when firmware version is passed
 
+void ConsentiumThingsDalton::beginSense(){
+  delay(I2C_DELAY);
+
+  if (!ads_1.begin(currentADCAddr)) {
+    Serial.println("Failed to initialize current ADC at 0x48");
+  }
+  if (!ads_2.begin(voltageADCAddr)) {
+    Serial.println("Failed to initialize voltage ADC at 0x49");
+  }
+}
+
+double ConsentiumThingsDalton::readCurrentBus(int cpin){
+  return ads_1.readADC_SingleEnded(cpin)*multiplier;
+}
+
+double ConsentiumThingsDalton::readVoltageBus(int vpin){
+  return ads_2.readADC_SingleEnded(vpin)*multiplier;
+}
+
 void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
   WiFi.mode(WIFI_STA);
   
@@ -48,6 +67,11 @@ void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
 void ConsentiumThingsDalton::initWiFiAutoConnect(const char* apName, const char* apPassword) {
     // Create a WiFiManager instance
     WiFiManager wm;
+
+    Serial.print("SSID: ");
+    Serial.prtintln(apName);
+    Serial.print("Passowrd: ");
+    Serial.println(apPassword);
 
     // Attempt auto-connect with specified AP name and password
     bool res = wm.autoConnect(apName, apPassword);
@@ -83,16 +107,6 @@ void ConsentiumThingsDalton::beginSend(const char* key, const char* board_id) {
   sendUrl.concat(String(key));
   sendUrl.concat("&boardkey=");
   sendUrl.concat(String(board_id));
-
-  delay(I2C_DELAY);
-
-  if (!ads_1.begin(currentADCAddr)) {
-    Serial.println("Failed to initialize current ADC at 0x48");
-  }
-  if (!ads_2.begin(voltageADCAddr)) {
-    Serial.println("Failed to initialize voltage ADC at 0x49");
-  }
-
 }
 
 // Function for receiving URL
@@ -224,13 +238,6 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
   // Close the HTTP connection
   http.end();
 }
-double ConsentiumThingsDalton::readCurrentBus(int cpin){
-  return ads_1.readADC_SingleEnded(cpin)*multiplier;
-}
-
-double ConsentiumThingsDalton::readVoltageBus(int vpin){
-  return ads_2.readADC_SingleEnded(vpin)*multiplier;
-}
 
 vector<pair<double, String>> ConsentiumThingsDalton::receiveData() {
   vector<pair<double, String>> result;
@@ -277,54 +284,47 @@ vector<pair<double, String>> ConsentiumThingsDalton::receiveData() {
 }
 
 void ConsentiumThingsDalton::checkAndPerformUpdate() {
-  const char* remoteVersion = getRemoteFirmwareVersion();
-
-  Serial.print(F("Remote version: "));
-  Serial.print(remoteVersion);
-  Serial.print(F(" On-device version: "));
-  Serial.print(firmwareVersion);
-
-  if (strcmp(remoteVersion, firmwareVersion) > 0) {
-
-    Serial.println(F("-> Update available."));
-
-    #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-      httpUpdate.rebootOnUpdate(true); // Remove automatic update
-      t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
-      switch (ret) {
-        case HTTP_UPDATE_FAILED:
-          Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", httpUpdate.getLastError(), httpUpdate.getLastErrorString().c_str());
-          Serial.println(F("Retry in 10 secs!"));
-          delay(10000); // Wait 10 secs before retrying
-          break;
-        case HTTP_UPDATE_OK:
-          Serial.println(F("Updated downloaded"));
-          delay(1000); // Wait a second and restart
-          Serial.println(F("Restarting!"));
-          //ESP.restart();
-          break;
-    #elif defined(ESP8266)
-      ESPhttpUpdate.rebootOnUpdate(true); // Remove automatic update
-      t_httpUpdate_return ret = ESPhttpUpdate.update(client, firmwareUrl);
-      switch (ret) {
-        case HTTP_UPDATE_FAILED:
-          Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n", ESPhttpUpdate.getLastError(), ESPhttpUpdate.getLastErrorString().c_str());
-          Serial.println(F("Retry in 10 secs!"));
-          delay(10000); // Wait 10 secs before retrying
-          break;
-        case HTTP_UPDATE_OK:
-          Serial.println(F("Updated downloaded"));
-          delay(1000); // Wait a second and restart
-          Serial.println(F("Restarting!"));
-          //ESP.restart();
-          break;
-    #endif
-
-
+    const char* remoteVersion = getRemoteFirmwareVersion();
+    if (!remoteVersion || !firmwareUrl) {
+        Serial.println(F("Error: Firmware version or URL is null."));
+        return;
     }
-  } else {
-    Serial.println("-> No update.");
-  }
+
+    Serial.print(F("Remote version: "));
+    Serial.print(remoteVersion);
+    Serial.print(F(" On-device version: "));
+    Serial.println(firmwareVersion);
+
+    if (strcmp(remoteVersion, firmwareVersion) > 0) {
+        Serial.println(F("-> Update available."));
+
+        #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+            httpUpdate.rebootOnUpdate(true);
+            t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
+        #elif defined(ESP8266)
+            ESPhttpUpdate.rebootOnUpdate(true);
+            t_httpUpdate_return ret = ESPhttpUpdate.update(client, firmwareUrl);
+        #endif
+
+        switch (ret) {
+            case HTTP_UPDATE_FAILED:
+                Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
+                              httpUpdate.getLastError(),
+                              httpUpdate.getLastErrorString().c_str());
+                Serial.println(F("Retry in 10 secs!"));
+                delay(10000); // Replace with a non-blocking delay
+                break;
+            case HTTP_UPDATE_OK:
+                Serial.println(F("Update downloaded."));
+                delay(1000);
+                Serial.println(F("Restarting!"));
+                ESP.restart(); // Ensure restart is intended
+                break;
+        }
+    } else {
+        Serial.println("-> No update.");
+    }
 }
+
 
 #endif

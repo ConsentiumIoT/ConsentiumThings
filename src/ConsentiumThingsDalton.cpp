@@ -69,7 +69,7 @@ void ConsentiumThingsDalton::initWiFiAutoConnect(const char* apName, const char*
     WiFiManager wm;
 
     Serial.print("SSID: ");
-    Serial.prtintln(apName);
+    Serial.println(apName);
     Serial.print("Passowrd: ");
     Serial.println(apPassword);
 

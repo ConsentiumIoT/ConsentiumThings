@@ -1,7 +1,5 @@
 # ConsentiumThings
 
-**Version:** v2.1.5  
-
 **Description:**  
 The **ConsentiumThingsDalton** project demonstrates how to use the ConsentiumThings IoT board to read sensor data and transmit it over HTTPS to the ConsentiumThings cloud. This library supports **ESP32**, **ESP8266**, and **Raspberry Pi Pico W** edge devices.
 

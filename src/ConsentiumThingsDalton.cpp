@@ -9,6 +9,8 @@
   X509List cert(consentium_root_ca);
 #endif
 
+bool otaFlag = false;
+
 void syncTime(){
     configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
     Serial.println(F("Waiting for NTP time sync: "));
@@ -141,6 +143,8 @@ void ConsentiumThingsDalton::beginOTA(const char* key, const char* board_id) {
     syncTime();
     client.setTrustAnchors(&cert);
   #endif
+
+  otaFlag = true;
   
   // create the firmware version URL
   versionUrl = String(versionURL);
@@ -198,6 +202,7 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
   JsonObject boardInfo = jsonDocument.createNestedObject("boardInfo");
   boardInfo["firmwareVersion"] = firmwareVersion;
   boardInfo["architecture"] = BOARD_TYPE;
+  boardInfo["statusOTA"] = otaFlag;
   
   // Serialize the JSON document to a string
   String jsonString;
@@ -229,6 +234,7 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
       Serial.println("Board Information:");
       Serial.println(" - Firmware Version: " + String(firmwareVersion));
       Serial.println(" - Architecture: " + String(BOARD_TYPE));
+      Serial.println(" - OTA enabled: " + String(otaFlag ? "True" : "False"));
       Serial.println(" ");
       toggleLED();
     }
@@ -284,19 +290,24 @@ vector<pair<double, String>> ConsentiumThingsDalton::receiveData() {
 }
 
 void ConsentiumThingsDalton::checkAndPerformUpdate() {
+    if(otaFlag == false) {
+        Serial.println(F("Error: OTA is not enabled, call beginOTA() to enable OTA."));
+        return;
+    }
+
     const char* remoteVersion = getRemoteFirmwareVersion();
     if (!remoteVersion || !firmwareUrl) {
         Serial.println(F("Error: Firmware version or URL is null."));
         return;
     }
 
-    Serial.print(F("Remote version: "));
-    Serial.print(remoteVersion);
-    Serial.print(F(" On-device version: "));
-    Serial.println(firmwareVersion);
+    Serial.println("Firmware Information:");
+    Serial.println(" - Remote version: " + String(remoteVersion));
+    Serial.println(" - On-device version: " + String(firmwareVersion));
 
     if (strcmp(remoteVersion, firmwareVersion) > 0) {
-        Serial.println(F("-> Update available."));
+        Serial.println(F(" - Update available."));
+        Serial.println(" ");
 
         #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
             httpUpdate.rebootOnUpdate(true);
@@ -322,7 +333,8 @@ void ConsentiumThingsDalton::checkAndPerformUpdate() {
                 break;
         }
     } else {
-        Serial.println("-> No update.");
+        Serial.println(" - No update.");
+        Serial.println(" ");
     }
 }
 

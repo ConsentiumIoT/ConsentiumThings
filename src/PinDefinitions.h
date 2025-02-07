@@ -44,6 +44,7 @@
     #define ADC_RESOLUTION 1024.0
 
     const float multiplier = 0.1875F;
+
     #define currentADCAddr 0x48
     #define voltageADCAddr 0x49
 #elif defined(ARDUINO_RASPBERRY_PI_PICO_W)
@@ -63,6 +64,7 @@
     #define ADC_VREF_mV    3300.0 // in millivolt
 
     const float multiplier = 0.1875F;
+
     #define currentADCAddr 0x48
     #define voltageADCAddr 0x49
 #elif defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_UNO)

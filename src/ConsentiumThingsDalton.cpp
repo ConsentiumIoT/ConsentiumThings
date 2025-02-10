@@ -303,7 +303,7 @@ void ConsentiumThingsDalton::checkAndPerformUpdate() {
 
     Serial.println("Firmware Information:");
     Serial.println(" - Remote version: " + String(remoteVersion));
-    Serial.println(" - On-device version: " + String(firmwareVersion));
+    Serial.println(" - Device version: " + String(firmwareVersion));
 
     if (strcmp(remoteVersion, firmwareVersion) > 0) {
         Serial.println(F(" - Update available."));

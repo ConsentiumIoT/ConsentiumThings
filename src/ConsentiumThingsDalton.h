@@ -16,7 +16,7 @@ class ConsentiumThingsDalton{
         void beginSend(const char*, const char*);
         void beginReceive(const char*, const char*);
         void initWiFi(const char*, const char*);
-        void initWiFiAutoConnect(const char* apName = "ConsentiumIoT_AP", const char* apPassword = "Consentium2024");
+        void initWiFiAutoConnect();
         void sendData(vector<double>, const char* [], int);
         double readCurrentBus(int);
         double readVoltageBus(int);

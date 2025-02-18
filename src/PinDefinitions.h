@@ -13,7 +13,7 @@
         #define ledPin LED_BUILTIN 
         #define BOARD_TYPE "ESP32-C3"
     #else
-        #define ledPin 23
+        #define ledPin LED_BUILTIN
         #define BOARD_TYPE "ESP32"
     #endif
  

@@ -28,8 +28,8 @@ void toggleLED() {
     ledState = !ledState;
 }
 
-ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {} // Default constructor without firmware version
-ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {} //Constructor when firmware version is passed
+ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {Serial.begin(ESPBAUD);} // Default constructor without firmware version
+ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {Serial.begin(ESPBAUD);} //Constructor when firmware version is passed
 
 void ConsentiumThingsDalton::beginSense(){
   delay(I2C_DELAY);
@@ -66,10 +66,21 @@ void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
   Serial.println(WiFi.localIP());
 }
 
-void ConsentiumThingsDalton::initWiFiAutoConnect(const char* apName, const char* apPassword) {
+void ConsentiumThingsDalton::initWiFiAutoConnect() {
     // Create a WiFiManager instance
     WiFiManager wm;
 
+    wm.setDebugOutput(false); // Disable debug output
+
+    uint8_t mac[6];
+    WiFi.macAddress(mac);
+
+    char apName[30];  // Buffer for SSID
+    snprintf(apName, sizeof(apName), "ConsentiumIoT_AP_%02X%02X%02X", mac[3], mac[4], mac[5]);
+
+    const char* apPassword = "Consentium2024"; // Default password for AP
+
+    Serial.println(" ");
     Serial.print("SSID: ");
     Serial.println(apName);
     Serial.print("Passowrd: ");
@@ -87,12 +98,12 @@ void ConsentiumThingsDalton::initWiFiAutoConnect(const char* apName, const char*
         Serial.println(F("Connected to WiFi successfully!"));
         Serial.print(F("Device IP: "));
         Serial.println(WiFi.localIP());
+        Serial.println(" ");
     }
 }
 
 // Function for sending URL
 void ConsentiumThingsDalton::beginSend(const char* key, const char* board_id) {
-  Serial.begin(ESPBAUD);
   pinMode(ledPin, OUTPUT);
     
   #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
@@ -113,7 +124,6 @@ void ConsentiumThingsDalton::beginSend(const char* key, const char* board_id) {
 
 // Function for receiving URL
 void ConsentiumThingsDalton::beginReceive(const char* key, const char* board_id) {
-  Serial.begin(ESPBAUD);
   pinMode(ledPin, OUTPUT);
     
   #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)

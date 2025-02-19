@@ -28,6 +28,18 @@ void toggleLED() {
     ledState = !ledState;
 }
 
+char random_char(uint8_t num) {
+  if (num < 26){
+    return 'A' + num;        // A-Z
+  } 
+  else if (num < 52) {
+    return 'a' + (num - 26); // a-z
+  }
+  else {
+    return '0' + (num - 52); // 0-9
+  }
+}
+
 ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {Serial.begin(ESPBAUD);} // Default constructor without firmware version
 ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {Serial.begin(ESPBAUD);} //Constructor when firmware version is passed
 
@@ -72,19 +84,18 @@ void ConsentiumThingsDalton::initWiFiAutoConnect() {
 
     wm.setDebugOutput(false); // Disable debug output
 
-    uint8_t mac[6];
-    WiFi.macAddress(mac);
+    char apName[30];
+    char apPassword[30];
 
-    char apName[30];  // Buffer for SSID
-    snprintf(apName, sizeof(apName), "ConsentiumIoT_AP_%02X%02X%02X", mac[3], mac[4], mac[5]);
-
-    const char* apPassword = "Consentium2024"; // Default password for AP
+    sprintf(apName, "ConsentiumIoT_AP_%c%c%c", random_char(random(62)), random_char(random(62)), random_char(random(62)));
+    sprintf(apPassword, "consentium%c%c%c", random_char(random(62)), random_char(random(62)), random_char(random(62)));
 
     Serial.println(" ");
-    Serial.print("SSID: ");
+    Serial.print(F("SSID: "));
     Serial.println(apName);
-    Serial.print("Passowrd: ");
+    Serial.print(F("Passowrd: "));
     Serial.println(apPassword);
+    Serial.println("");
 
     // Attempt auto-connect with specified AP name and password
     bool res = wm.autoConnect(apName, apPassword);

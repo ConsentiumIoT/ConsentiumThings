@@ -79,9 +79,6 @@ void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
 }
 
 void ConsentiumThingsDalton::initWiFiAutoConnect() {
-    // Create a WiFiManager instance
-    WiFiManager wm;
-
     wm.setDebugOutput(false); // Disable debug output
 
     char apName[30];
@@ -90,12 +87,14 @@ void ConsentiumThingsDalton::initWiFiAutoConnect() {
     sprintf(apName, "ConsentiumIoT_AP_%c%c%c", random_char(random(62)), random_char(random(62)), random_char(random(62)));
     sprintf(apPassword, "consentium%c%c%c", random_char(random(62)), random_char(random(62)), random_char(random(62)));
 
-    Serial.println(" ");
-    Serial.print(F("SSID: "));
-    Serial.println(apName);
-    Serial.print(F("Passowrd: "));
-    Serial.println(apPassword);
-    Serial.println("");
+    Serial.println(F("\n========== WiFi Auto-Connect =========="));
+    Serial.println(F("Starting WiFi access point setup..."));
+    Serial.println(F("Use the following credentials to connect:"));
+    
+    Serial.println(F("---------------------------------------"));
+    Serial.print(F("SSID:     ")); Serial.println(apName);
+    Serial.print(F("Password: ")); Serial.println(apPassword);
+    Serial.println(F("---------------------------------------"));
 
     // Attempt auto-connect with specified AP name and password
     bool res = wm.autoConnect(apName, apPassword);
@@ -155,7 +154,6 @@ void ConsentiumThingsDalton::beginReceive(const char* key, const char* board_id)
 
 // Function for OTA receiving URL
 void ConsentiumThingsDalton::beginOTA(const char* key, const char* board_id) {
-  Serial.begin(ESPBAUD);
   pinMode(ledPin, OUTPUT);
     
   #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
@@ -198,7 +196,6 @@ const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
 }
 
 void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* sensor_info[], int precision) {
-
   int sensor_num = sensor_data.size();
 
   if (WiFi.status() != WL_CONNECTED) {

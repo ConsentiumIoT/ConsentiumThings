@@ -24,6 +24,7 @@ class ConsentiumThingsDalton{
         void checkAndPerformUpdate();
     private:
         WiFiClientSecure client;
+        WiFiManager wm;
         HTTPClient http;
         Adafruit_ADS1115 ads_1;
         Adafruit_ADS1115 ads_2;

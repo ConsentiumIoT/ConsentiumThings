@@ -2,7 +2,7 @@
 
 #if defined(ARDUINO_AVR_PRO) || defined(ARDUINO_AVR_UNO)
 
-ConsentiumThingsBeta::ConsentiumThingsBeta() {}
+ConsentiumThingsBeta::ConsentiumThingsBeta() {Serial.begin(COMM_BAUD);}
 
 bool sendAT(const char* command, char response[], long wdelay) {
     Serial.println(command);
@@ -13,7 +13,6 @@ bool sendAT(const char* command, char response[], long wdelay) {
 void ConsentiumThingsBeta::beginSend(const char* key, const char* board_key) {
     this->key = key;
     this->board_key = board_key;
-    Serial.begin(COMM_BAUD);
 }
 
 void ConsentiumThingsBeta::initWiFi(const char* ssid, const char* password) {

@@ -19,7 +19,7 @@
       * GPIO 26 (Raspberry Pi Pico W)
 
   Tutorials and Documentation:
-  Visit us at: https://docs.consentiumiot.com
+  Visit us at: https://docs.consentiumiot.com/code-usage/consentiumthings-arduino-api-with-ota-updates
 
   For Support:
   Email: official@consentiumiot.com

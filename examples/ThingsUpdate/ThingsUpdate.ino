@@ -13,7 +13,7 @@
     to indicate REST events.
 
   Tutorials and Documentation:
-  Visit us at: https://docs.consentiumiot.com
+  Visit us at: https://docs.consentiumiot.com/code-usage/consentiumthings-arduino-api
 
   For Support:
   Email: official@consentiumiot.com

@@ -1,5 +1,6 @@
 #if defined(ESP32)
     #include <WiFi.h>
+    #include <esp_wifi.h>
     #include <Wire.h>
     #include <vector>
     #include <HTTPClient.h>

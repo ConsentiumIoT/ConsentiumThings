@@ -10,10 +10,11 @@
 #endif
 
 bool otaFlag = false;
+char macAddr[18];
 
 void syncTime(){
     configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
-    Serial.println(F("Waiting for NTP time sync: "));
+    Serial.println(F("Waiting for NTP time sync"));
     time_t now = time(nullptr);
     while (now < NTP_SYNC_WAIT) {
       delay(500);
@@ -22,6 +23,7 @@ void syncTime(){
     struct tm timeinfo;
     gmtime_r(&now, &timeinfo); 
 }
+
 void toggleLED() {
     static bool ledState = false;
     digitalWrite(ledPin, ledState);
@@ -38,6 +40,25 @@ char random_char(uint8_t num) {
   else {
     return '0' + (num - 52); // 0-9
   }
+}
+
+void readMacAddress(char *macAddr) {
+  #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
+    uint8_t baseMac[6];
+    esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+    
+    if (ret == ESP_OK) {
+      sprintf(macAddr, "%02X:%02X:%02X:%02X:%02X:%02X", 
+              baseMac[0], baseMac[1], baseMac[2], 
+              baseMac[3], baseMac[4], baseMac[5]);
+    } else {
+      strcpy(macAddr, "00:00:00:00:00:00");  // Error fallback
+    }
+  #elif defined(ESP8266)
+    sprintf(macAddr, WiFi.macAddress().c_str());
+  #endif
+  
+
 }
 
 ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {Serial.begin(ESPBAUD);} // Default constructor without firmware version
@@ -64,6 +85,8 @@ double ConsentiumThingsDalton::readVoltageBus(int vpin){
 
 void ConsentiumThingsDalton::initWiFi(const char* ssid, const char* password) {
   WiFi.mode(WIFI_STA);
+ 
+  readMacAddress(macAddr);
   
   Serial.print(F("Attempting to connect SSID: "));
   Serial.println(ssid);
@@ -98,6 +121,8 @@ void ConsentiumThingsDalton::initWiFiAutoConnect() {
 
     // Attempt auto-connect with specified AP name and password
     bool res = wm.autoConnect(apName, apPassword);
+
+    readMacAddress(macAddr);
 
     // Check if connection was successful
     if (!res) {
@@ -220,11 +245,15 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
   JsonObject boardInfo = jsonDocument.createNestedObject("boardInfo");
   boardInfo["firmwareVersion"] = firmwareVersion;
   boardInfo["architecture"] = BOARD_TYPE;
+  boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
   
   // Serialize the JSON document to a string
   String jsonString;
   serializeJsonPretty(jsonDocument, jsonString);
+
+  // Print the JSON document to the Serial
+  // serializeJsonPretty(jsonDocument, Serial);
 
   http.begin(client, sendUrl);
 
@@ -252,6 +281,7 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
       Serial.println("Board Information:");
       Serial.println(" - Firmware Version: " + String(firmwareVersion));
       Serial.println(" - Architecture: " + String(BOARD_TYPE));
+      Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "True" : "False"));
       Serial.println(" ");
       toggleLED();
@@ -337,9 +367,15 @@ void ConsentiumThingsDalton::checkAndPerformUpdate() {
 
         switch (ret) {
             case HTTP_UPDATE_FAILED:
+              #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
                 Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
-                              httpUpdate.getLastError(),
-                              httpUpdate.getLastErrorString().c_str());
+                  httpUpdate.getLastError(),
+                  httpUpdate.getLastErrorString().c_str());
+              #elif defined(ESP8266)
+                Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
+                  ESPhttpUpdate.getLastError(),
+                  ESPhttpUpdate.getLastErrorString().c_str());
+              #endif
                 Serial.println(F("Retry in 10 secs!"));
                 delay(10000); // Replace with a non-blocking delay
                 break;

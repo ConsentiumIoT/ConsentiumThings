@@ -1,6 +1,8 @@
+#ifndef PIN_DEFINITIONS_H
+#define PIN_DEFINITIONS_H
+
 #if defined(ESP32)
     #include <WiFi.h>
-    #include <esp_wifi.h>
     #include <Wire.h>
     #include <vector>
     #include <HTTPClient.h>
@@ -22,10 +24,16 @@
     #define ADC_VREF_mV    3300.0 // in millivolt
     #define ADC_RESOLUTION 4096.0
 
-    const float multiplier = 0.1875F;
-
+    
     #define currentADCAddr 0x48
     #define voltageADCAddr 0x49
+
+    #define MCU_SIM_BAUDRATE        115200
+    #define MCU_SIM_TX_PIN          21
+    #define MCU_SIM_RX_PIN          20
+    #define MCU_SIM_EN_PIN          2
+
+    const float multiplier = 0.1875F;
 #elif defined(ESP8266)
     #include <Wire.h>
     #include <vector>
@@ -91,6 +99,7 @@
 #endif
 
 
+
 #define WIFI_DELAY 500
 #define I2C_DELAY 1000
 
@@ -106,3 +115,6 @@
 #define LOW_PRE 2
 #define MID_PRE 4
 #define HIGH_PRE 7
+
+#endif // PIN_DEFINITIONS_H
+

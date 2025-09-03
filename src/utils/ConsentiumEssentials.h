@@ -1,7 +1,11 @@
 // Sensor data update and receive URLs
-const char* send_url = "https://consentiumiot.com/api/board/updatedata/?";
-const char* receive_url = "https://consentiumiot.com/api/board/getdata/recent?";
+const char* send_url = "https://api.consentiumiot.com/v2/updateData?";
+const char* receive_url = "https://api.consentiumiot.com/v2/getData?";
 
 // Board OTA essential URLs
-const char* versionURL = "https://consentiumiot.com/api/board/firmware/version?";
-const char* firmwareURL = "https://consentiumiot.com/api/board/firmware/bin?";
+const char* versionURL = "https://api.consentiumiot.com/firmware/version?";
+const char* firmwareURL = "https://api.consentiumiot.com/firmware/bin?";
+
+// Board shared variables
+bool otaFlag = false;
+char macAddr[18];

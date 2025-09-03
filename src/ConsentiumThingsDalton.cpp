@@ -9,9 +9,6 @@
   X509List cert(consentium_root_ca);
 #endif
 
-bool otaFlag = false;
-char macAddr[18];
-
 void syncTime(){
     configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
     Serial.println(F("Waiting for NTP time sync"));
@@ -24,7 +21,7 @@ void syncTime(){
     gmtime_r(&now, &timeinfo); 
 }
 
-void toggleLED() {
+inline void toggleLED() {
     static bool ledState = false;
     digitalWrite(ledPin, ledState);
     ledState = !ledState;
@@ -42,7 +39,7 @@ char random_char(uint8_t num) {
   }
 }
 
-void readMacAddress(char *macAddr) {
+inline void readMacAddress(char *macAddr) {
   #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
     uint8_t baseMac[6];
     esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
@@ -57,8 +54,6 @@ void readMacAddress(char *macAddr) {
   #elif defined(ESP8266)
     sprintf(macAddr, WiFi.macAddress().c_str());
   #endif
-  
-
 }
 
 ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {Serial.begin(ESPBAUD);} // Default constructor without firmware version
@@ -151,9 +146,9 @@ void ConsentiumThingsDalton::beginSend(const char* key, const char* board_id) {
   // create the send URL
   sendUrl = String(send_url);
   sendUrl.reserve(ARRAY_RESERVE);
-  sendUrl.concat("key=");
+  sendUrl.concat("sendKey=");
   sendUrl.concat(String(key));
-  sendUrl.concat("&boardkey=");
+  sendUrl.concat("&boardKey=");
   sendUrl.concat(String(board_id));
 }
 
@@ -171,9 +166,9 @@ void ConsentiumThingsDalton::beginReceive(const char* key, const char* board_id)
   // create the receive URL
   receiveUrl = String(receive_url);
   receiveUrl.reserve(ARRAY_RESERVE);
-  receiveUrl.concat("receivekey=");
+  receiveUrl.concat("receiveKey=");
   receiveUrl.concat(String(key));
-  receiveUrl.concat("&boardkey=");
+  receiveUrl.concat("&boardKey=");
   receiveUrl.concat(String(board_id));
 }
 
@@ -193,17 +188,17 @@ void ConsentiumThingsDalton::beginOTA(const char* key, const char* board_id) {
   // create the firmware version URL
   versionUrl = String(versionURL);
   versionUrl.reserve(ARRAY_RESERVE);
-  versionUrl.concat("receivekey=");
+  versionUrl.concat("receiveKey=");
   versionUrl.concat(String(key));
-  versionUrl.concat("&boardkey=");
+  versionUrl.concat("&boardKey=");
   versionUrl.concat(String(board_id));
 
   // create the firmware download URL
   firmwareUrl = String(firmwareURL);
   firmwareUrl.reserve(ARRAY_RESERVE);
-  firmwareUrl.concat("receivekey=");
+  firmwareUrl.concat("receiveKey=");
   firmwareUrl.concat(String(key));
-  firmwareUrl.concat("&boardkey=");
+  firmwareUrl.concat("&boardKey=");
   firmwareUrl.concat(String(board_id));
 }
 
@@ -228,6 +223,8 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
     return;
   }
 
+  long rssi = WiFi.RSSI();
+
   JsonDocument jsonDocument;
 
   // Create a JSON array for sensor data 
@@ -247,6 +244,7 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
   boardInfo["architecture"] = BOARD_TYPE;
   boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
+  boardInfo["signalStrength"] = rssi;
   
   // Serialize the JSON document to a string
   String jsonString;
@@ -262,12 +260,10 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
 
   // Make the POST request
   int httpCode = http.sendRequest("POST", jsonString);
-  
+ 
   // Check for errors
   if (httpCode > 0) {
     if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
-      String response = http.getString();
-
       // Print a more human-readable message
       Serial.println(" ");
       Serial.println("Data successfully sent to the server!");
@@ -283,11 +279,28 @@ void ConsentiumThingsDalton::sendData(vector<double> sensor_data, const char* se
       Serial.println(" - Architecture: " + String(BOARD_TYPE));
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "True" : "False"));
+      Serial.println(" - Signal: " + String(rssi) + " dBm");
       Serial.println(" ");
       toggleLED();
     }
-  } else {
+    else if(httpCode == 422){
+      Serial.print("Received 422 response:");
+      String response = http.getString();
+      // Create a small JSON document
+      StaticJsonDocument<128> errorDoc;
+
+      // Deserialize the JSON response
+      DeserializationError error = deserializeJson(errorDoc, response);
+      const char* message = errorDoc["message"];
+      Serial.println(message);
+
+      return ;
+    }
+  } 
+  else {
     Serial.println(F("HTTP POST request failed."));
+
+    return ;
   }
   // Close the HTTP connection
   http.end();

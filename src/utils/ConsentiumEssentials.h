@@ -1,6 +1,6 @@
 // Sensor data update and receive URLs
 const char* send_url = "https://api.consentiumiot.com/v2/updateData?";
-const char* receive_url = "https://api.consentiumiot.com/v2/getData?";
+const char* receive_url = "https://api.consentiumiot.com/getData?";
 
 // Board OTA essential URLs
 const char* versionURL = "https://api.consentiumiot.com/firmware/version?";

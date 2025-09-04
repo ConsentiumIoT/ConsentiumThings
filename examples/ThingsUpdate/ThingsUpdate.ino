@@ -35,19 +35,22 @@ const char *SendApiKey = "YOUR_API_KEY";      // API key for sending data
 const char *BoardApiKey = "YOUR_BOARD_API_KEY"; // API key for the board
 
 // Define the interval for data sending
-constexpr int interval = 7000;  // 7 seconds
+constexpr int interval = 5000;  // Data transmission interval (5 seconds for free tier)
 
 void setup() {
+  // Start serial communication for debugging
+  Serial.begin(115200);
+
   // Consentium IoT branding message
   Serial.println("Consentium IoT - Edge Board Library");
   Serial.println("------------------------------------");
   Serial.println("Initializing ConsentiumThings Board...");
 
   // Begin WiFi connection
-  board.initWiFi(ssid, pass);
+  board.connectWiFi(ssid, pass);
 
   // Initialize the board for sending data
-  board.beginSend(SendApiKey, BoardApiKey);
+  board.enableSend(SendApiKey, BoardApiKey);
 
   Serial.println("ConsentiumThings Board Initialized!");
   Serial.println("------------------------------------");
@@ -60,7 +63,7 @@ void loop() {
   vector<double> sensorValues = {data_0};  // Sensor data vector
   const char* sensorInfo[] = {"Temperature"}; // Sensor info array
 
-  board.sendData(sensorValues, sensorInfo, LOW_PRE);  // Send over REST with low precision
+  board.pushData(sensorValues, sensorInfo, LOW_PRE);  // Send over REST with low precision
 
   // Wait before sending the next batch of data
   delay(interval);

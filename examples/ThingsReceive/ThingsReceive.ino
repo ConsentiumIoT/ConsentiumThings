@@ -27,21 +27,24 @@ ConsentiumThingsDalton board; // Create ConsentiumThings object
 
 const char *ssid = "YOUR_WIFI_SSID";       // WiFi SSID
 const char *pass = "YOUR_WIFI_PASSWORD";   // WiFi password
-constexpr int interval = 7000;             // Data retrieval interval (7 seconds)
+constexpr int interval = 5000;             // Data retrieval interval (5 seconds for free tier)
 const char *ReceiveApiKey = "YOUR_API_KEY";   // API key for receiving data
 const char *BoardApiKey = "YOUR_BOARD_API_KEY"; // API key for the edge board
 
 void setup() {
+  // Start serial communication for debugging
+  Serial.begin(115200);
+
   // Consentium IoT branding message
   Serial.println("Consentium IoT - Edge Board Library");
   Serial.println("------------------------------------");
   Serial.println("Initializing ConsentiumThings Board...");
 
   // Begin WiFi connection
-  board.initWiFi(ssid, pass);
+  board.connectWiFi(ssid, pass);
 
   // Initialize IoT board to receive data
-  board.beginReceive(ReceiveApiKey, BoardApiKey);
+  board.enableReceive(ReceiveApiKey, BoardApiKey);
 
   Serial.println("ConsentiumThings Board Initialized!");
   Serial.println("------------------------------------");
@@ -50,7 +53,7 @@ void setup() {
 
 void loop() {
   // Get sensor data from the Consentium IoT Cloud
-  auto dataPairs = board.receiveData();
+  auto dataPairs = board.pullData();
 
   // Print received sensor data
   Serial.println("[Consentium IoT] Received Data:");

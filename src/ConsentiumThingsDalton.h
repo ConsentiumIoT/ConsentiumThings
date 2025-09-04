@@ -1,8 +1,6 @@
 #ifndef ConsentiumThingsDalton_h
 #define ConsentiumThingsDalton_h
 
-#if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W) || defined(ESP8266)
-
 #include <PinDefinitions.h>
 
 using namespace std;
@@ -11,17 +9,18 @@ class ConsentiumThingsDalton{
     public:
         ConsentiumThingsDalton();
         ConsentiumThingsDalton(const char*);
-        void beginSense();
-        void beginOTA(const char*, const char*);
-        void beginSend(const char*, const char*);
-        void beginReceive(const char*, const char*);
-        void initWiFi(const char*, const char*);
-        void initWiFiAutoConnect();
-        void sendData(vector<double>, const char* [], int);
+        void startSensing();
+        void enableAirUpdate(const char*, const char*);
+        void enableSend(const char*, const char*);
+        void enableReceive(const char*, const char*);
+        void connectWiFi(const char*, const char*);
+        void smartConnect();
+        void pushData(vector<double>, const char* [], int);
         double readCurrentBus(int);
         double readVoltageBus(int);
-        vector<pair<double, String>> receiveData();
-        void checkAndPerformUpdate();
+        vector<pair<double, String>> pullData();
+        void setSyncInterval(int);
+        void airSync(vector<double>, const char* [], int);
     private:
         WiFiClientSecure client;
         WiFiManager wm;
@@ -34,9 +33,10 @@ class ConsentiumThingsDalton{
         String versionUrl;
         String firmwareUrl;
         const char* firmwareVersion;
-        const char* getRemoteFirmwareVersion();     
+        const char* getRemoteFirmwareVersion();
+        int airSyncInterval;
+        int pushCounter;     
 };
 
 #endif
 
-#endif

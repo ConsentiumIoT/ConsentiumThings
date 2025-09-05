@@ -272,7 +272,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.println("Board Information:");
       Serial.println(" - Architecture: " + String(BOARD_TYPE));
       Serial.println(" - Device MAC: " + String(macAddr));
-      Serial.println(" - OTA enabled: " + String(otaFlag ? "True" : "False"));
+      Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
       Serial.println(" ");
       blinkLED();
@@ -479,7 +479,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       Serial.println(" - Firmware Version: " + String(firmwareVersion));
       Serial.println(" - Architecture: " + String(BOARD_TYPE));
       Serial.println(" - Device MAC: " + String(macAddr));
-      Serial.println(" - OTA enabled: " + String(otaFlag ? "True" : "False"));
+      Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
       Serial.println(" ");
       

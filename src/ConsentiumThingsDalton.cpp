@@ -47,7 +47,7 @@ inline void deviceMAC(char *macAddr) {
   #endif
 }
 
-ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("") {} // Default constructor without firmware version
+ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {} // Default constructor without firmware version
 ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {} //Constructor when firmware version is passed
 
 void ConsentiumThingsDalton::startSensing(){

@@ -7,20 +7,35 @@ using namespace std;
 
 class ConsentiumThingsDalton{
     public:
+        // Main objects
         ConsentiumThingsDalton();
         ConsentiumThingsDalton(const char*);
-        void startSensing();
-        void enableAirUpdate(const char*, const char*);
-        void enableSend(const char*, const char*);
-        void enableReceive(const char*, const char*);
-        void connectWiFi(const char*, const char*);
-        void smartConnect();
-        void pushData(vector<double>, const char* [], int);
-        double readCurrentBus(int);
-        double readVoltageBus(int);
-        vector<pair<double, String>> pullData();
+
+        // Air Sync and OTA
         void setSyncInterval(int);
         void airSync(vector<double>, const char* [], int);
+        void enableAirUpdate(const char*, const char*);
+        
+        // Data Send and Receive
+        void enableSend(const char*, const char*);
+        void enableReceive(const char*, const char*);
+        vector<pair<double, String>> pullData();
+        void pushData(vector<double>, const char* [], int);
+        
+        // WiFi Management
+        void connectWiFi(const char*, const char*);
+        void smartConnect();
+
+        
+        // Current and Voltage Sensing
+        void startSensing();
+        double readCurrentBus(int);
+        double readVoltageBus(int);
+        
+
+        // Battery Monitoring
+        void enableBatteryMonitoring(int pin, float refVoltage = 3.3, float dividerRatio = 2.0);
+        void disableBatteryMonitoring();
     private:
         WiFiClientSecure client;
         WiFiManager wm;
@@ -35,7 +50,13 @@ class ConsentiumThingsDalton{
         const char* firmwareVersion;
         const char* getRemoteFirmwareVersion();
         int airSyncInterval;
-        int pushCounter;     
+        int pushCounter;   
+        
+        bool batteryMonitoringEnabled = false;
+        int batteryPin;
+        float refVoltage;
+        float dividerRatio;
+        double getBatteryVoltage();
 };
 
 #endif

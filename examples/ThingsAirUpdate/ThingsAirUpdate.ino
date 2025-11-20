@@ -63,6 +63,9 @@ void setup() {
   // Initialize the board for sending data
   board.enableSend(SendApiKey, BoardApiKey);
 
+  // Enable battery monitoring on ADC_IN pin (optional)
+  // board.enableBatteryMonitoring(ADC_IN);
+  
   // Enable OTA updates
   board.enableAirUpdate(ReceiveApiKey, BoardApiKey);
 

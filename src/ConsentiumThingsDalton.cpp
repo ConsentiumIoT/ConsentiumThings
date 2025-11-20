@@ -69,6 +69,32 @@ double ConsentiumThingsDalton::readVoltageBus(int vpin){
   return ads_2.readADC_SingleEnded(vpin)*multiplier;
 }
 
+void ConsentiumThingsDalton::enableBatteryMonitoring(int pin, float refVoltage, float dividerRatio) {
+  this->batteryMonitoringEnabled = true;
+  this->batteryPin = pin;
+  this->refVoltage = refVoltage;
+  this->dividerRatio = dividerRatio;
+  pinMode(batteryPin, INPUT);
+  Serial.println(F("[ConsentiumThings] Battery monitoring enabled."));
+}
+
+void ConsentiumThingsDalton::disableBatteryMonitoring() {
+  this->batteryMonitoringEnabled = false;
+  Serial.println(F("[ConsentiumThings] Battery monitoring disabled."));
+}
+
+double ConsentiumThingsDalton::getBatteryVoltage() {
+  if (!batteryMonitoringEnabled) return -1.0;
+    float raw = 0.0;
+    for (int i = 0; i < 10; i++) {
+      raw += analogReadMilliVolts(batteryPin);
+      delay(2);
+    }
+    float batteryVoltage = this->dividerRatio * raw / 10 / 1000;  // Average and scale in V
+
+  return batteryVoltage;
+}
+
 void ConsentiumThingsDalton::connectWiFi(const char* ssid, const char* password) {
   WiFi.mode(WIFI_STA);
  
@@ -219,6 +245,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   }
 
   long rssi = WiFi.RSSI();
+  float batteryVoltage = getBatteryVoltage();
 
   JsonDocument jsonDocument;
 
@@ -240,6 +267,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
   boardInfo["signalStrength"] = rssi;
+  boardInfo["batteryStrength"] = batteryVoltage;
   
   // Serialize the JSON document to a string
   String jsonString;
@@ -274,6 +302,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
+      Serial.println(" - Battery: " + String(batteryVoltage) + " V");
       Serial.println(" ");
       blinkLED();
     }
@@ -438,6 +467,8 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
 
   // --- Construct the JSON payload ---
   long rssi = WiFi.RSSI();
+  float batteryVoltage = getBatteryVoltage();
+
   JsonDocument jsonDocument;
   JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
 
@@ -453,6 +484,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
   boardInfo["signalStrength"] = rssi;
+  boardInfo["batteryStrength"] = batteryVoltage;
   
   String jsonString;
   serializeJsonPretty(jsonDocument, jsonString);
@@ -481,6 +513,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
+      Serial.println(" - Battery: " + String(batteryVoltage) + " V");
       Serial.println(" ");
       
       // Increment counter on successful push and log it

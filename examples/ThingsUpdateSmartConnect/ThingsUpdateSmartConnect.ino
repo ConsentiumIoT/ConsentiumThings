@@ -48,6 +48,9 @@ void setup() {
   // Initialize the board for sending data
   board.enableSend(SendApiKey, BoardApiKey);
 
+  // Enable battery monitoring on ADC_IN pin (optional)
+  // board.enableBatteryMonitoring(ADC_IN);
+
   Serial.println("ConsentiumThings Board Initialized!");
   Serial.println("------------------------------------");
   Serial.println();
@@ -57,7 +60,12 @@ void loop() {
   // Prepare sample sensor data
   double data_0 = 1.0;  // Sample temperature data
   vector<double> sensorValues = {data_0};  // Sensor data vector
-  const char* sensorInfo[] = {"Temperature"}; // Sensor info array
+  
+  // Sensor info without units can be defined as
+  const char* sensorInfo[] = {"Temperature"}; 
+
+  // Sensor info with units can be defined as
+  // const char* sensorInfo[] = {"Temperature/C"};
 
   board.pushData(sensorValues, sensorInfo, LOW_PRE);  // Send over REST with low precision
 

@@ -81,7 +81,12 @@ void loop() {
   // Prepare sample sensor data
   double data_0 = 1.0; // Sample temperature data
   vector<double> sensorValues = {data_0}; // Sensor data vector
-  const char* sensorInfo[] = {"Temperature"}; // Sensor information array
+
+  // Sensor info with units can be defined as
+  // const char* sensorInfo[] = {"Temperature/C"};
+
+  // Sensor information array with no units
+  const char* sensorInfo[] = {"Temperature"}; 
 
   board.airSync(sensorValues, sensorInfo, LOW_PRE); // Send with low precision
 

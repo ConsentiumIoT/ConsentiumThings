@@ -252,6 +252,9 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   long rssi = WiFi.RSSI();
   float batteryVoltage = getBatteryVoltage();
 
+  char name[50];
+  char unit[50];
+
   JsonDocument jsonDocument;
 
   // Create a JSON array for sensor data 
@@ -296,10 +299,21 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.println(" ");
       Serial.println("Data successfully sent to the server!");
       // Serial.println("Here are the details:");
-      
+
       Serial.println("Sensor Data:");
       for (int i = 0; i < sensor_num; i++) {
-        Serial.println(" - " + String(sensor_info[i]) + ": " + String(sensor_data[i], precision));
+        const char* info = sensor_info[i];    // pick the i-th string
+        const char* slash = strchr(info, '/');
+        if (slash != nullptr) {
+          size_t len = slash - info;
+          strncpy(name, info, len);
+          name[len] = '\0';
+          strcpy(unit, slash + 1);
+        } else {
+          strcpy(name, info);
+          unit[0] = '\0';   // empty unit
+        }
+        Serial.println(" - " + String(name) + ": " + String(sensor_data[i], precision) + " " + String(unit));
       }
 
       Serial.println("Board Information:");
@@ -474,6 +488,9 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   long rssi = WiFi.RSSI();
   float batteryVoltage = getBatteryVoltage();
 
+  char name[50];
+  char unit[50];
+
   JsonDocument jsonDocument;
   JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
 
@@ -509,7 +526,18 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       
       Serial.println("Sensor Data:");
       for (int i = 0; i < sensor_num; i++) {
-        Serial.println(" - " + String(sensor_info[i]) + ": " + String(sensor_data[i], precision));
+        const char* info = sensor_info[i];    // pick the i-th string
+        const char* slash = strchr(info, '/');
+        if (slash != nullptr) {
+          size_t len = slash - info;
+          strncpy(name, info, len);
+          name[len] = '\0';
+          strcpy(unit, slash + 1);
+        } else {
+          strcpy(name, info);
+          unit[0] = '\0';   // empty unit
+        }
+        Serial.println(" - " + String(name) + ": " + String(sensor_data[i], precision) + " " + String(unit));
       }
 
       Serial.println("Board Information:");

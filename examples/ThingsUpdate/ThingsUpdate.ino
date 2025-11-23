@@ -55,6 +55,10 @@ void setup() {
   // Enable battery monitoring on ADC_IN pin (optional)
   // board.enableBatteryMonitoring(ADC_IN);
 
+  // Enable current and voltage industrial monitoring (optional)
+  // board.startSensing();
+  
+
   Serial.println("ConsentiumThings Board Initialized!");
   Serial.println("------------------------------------");
   Serial.println();
@@ -63,6 +67,19 @@ void setup() {
 void loop() {
   // Prepare sample sensor data
   double data_0 = 1.0;  // Sample temperature data
+
+  // Get data from 4-20mA current sensor, returns as mA (optional)
+  // double cin_1_current = board.readCurrentBus(CIN_1);
+  // double cin_2_current = board.readCurrentBus(CIN_2);
+  // double cin_3_current = board.readCurrentBus(CIN_3);
+  // double cin_4_current = board.readCurrentBus(CIN_4);
+
+  // Get data from 0-10v voltage sensor, returns as volts (optional)
+  // double cin_1_current = board.readVoltageBus(VIN_1);
+  // double cin_2_current = board.readVoltageBus(VIN_2);
+  // double cin_3_current = board.readVoltageBus(VIN_3);
+  // double cin_4_current = board.readVoltageBus(VIN_4);
+
   vector<double> sensorValues = {data_0};  // Sensor data vector
   
   // Sensor info without units can be defined as

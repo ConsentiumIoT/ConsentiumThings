@@ -279,7 +279,12 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
   boardInfo["signalStrength"] = rssi;
-  boardInfo["batteryStrength"] = batteryVoltage;
+  if (batteryMonitoringEnabled){
+    boardInfo["batteryStrength"] = batteryVoltage;
+  }
+  else{
+    boardInfo["batteryStrength"] = "NA";
+  }
   
   // Serialize the JSON document to a string
   String jsonString;
@@ -325,7 +330,10 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
-      Serial.println(" - Battery: " + String(batteryVoltage) + " V");
+      if (batteryMonitoringEnabled){
+        Serial.println(" - Battery: " + String(batteryVoltage) + " V");
+      }
+      
       Serial.println(" ");
       blinkLED();
     }

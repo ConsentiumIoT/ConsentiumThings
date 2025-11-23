@@ -51,6 +51,8 @@ ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {} // 
 ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {} //Constructor when firmware version is passed
 
 void ConsentiumThingsDalton::startSensing(){
+  Wire.begin(5, 6);
+  
   delay(I2C_DELAY);
 
   if (!ads_1.begin(currentADCAddr)) {
@@ -62,11 +64,13 @@ void ConsentiumThingsDalton::startSensing(){
 }
 
 double ConsentiumThingsDalton::readCurrentBus(int cpin){
-  return ads_1.readADC_SingleEnded(cpin)*multiplier;
+  int16_t raw = ads_1.readADC_SingleEnded(cpin);
+  return ads_1.computeVolts(raw) * 1000 / 240.0; // Convert to mA assuming 240E resistor
 }
 
 double ConsentiumThingsDalton::readVoltageBus(int vpin){
-  return ads_2.readADC_SingleEnded(vpin)*multiplier;
+  int16_t raw = ads_2.readADC_SingleEnded(vpin);
+  return ads_2.computeVolts(raw) * 2; // Account for voltage divider
 }
 
 void ConsentiumThingsDalton::enableBatteryMonitoring(int pin, float refVoltage, float dividerRatio) {

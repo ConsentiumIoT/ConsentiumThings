@@ -33,7 +33,16 @@
     #define MCU_SIM_RX_PIN          20
     #define MCU_SIM_EN_PIN          2
 
-    const float multiplier = 0.1875F;
+    #define VIN_1 0
+    #define VIN_2 1
+    #define VIN_3 2
+    #define VIN_4 3
+
+    #define CIN_1 0
+    #define CIN_2 1
+    #define CIN_3 2
+    #define CIN_4 3
+
 #elif defined(ESP8266)
     #include <Wire.h>
     #include <vector>
@@ -97,8 +106,6 @@
     #define MID_PRE 4
     #define HIGH_PRE 6
 #endif
-
-
 
 #define WIFI_DELAY 500
 #define I2C_DELAY 1000

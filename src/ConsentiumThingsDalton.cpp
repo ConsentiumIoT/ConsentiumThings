@@ -656,3 +656,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       Serial.println(" ");
   }
 }
+
+void ConsentiumThingsDalton::sleep(unsigned long interval_ms, ConsentiumSleepMode mode){
+    ConsentiumSleep::sleep(interval_ms, mode);
+}

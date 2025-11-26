@@ -2,6 +2,7 @@
 #define ConsentiumThingsDalton_h
 
 #include <PinDefinitions.h>
+#include "ConsentiumSleep.h"
 
 using namespace std;
 
@@ -36,6 +37,9 @@ class ConsentiumThingsDalton{
         // Battery Monitoring
         void enableBatteryMonitoring(int pin, float refVoltage = 3.3, float dividerRatio = 2.0);
         void disableBatteryMonitoring();
+
+        // Sleep
+        void sleep(unsigned long interval_ms, ConsentiumSleepMode mode = CONSENTIUM_DEEP_SLEEP);
     private:
         WiFiClientSecure client;
         WiFiManager wm;

@@ -7,7 +7,7 @@
   Features:
   - Seamless WiFi connectivity
   - REST-based data transmission to the Consentium IoT Cloud
-  - Deep sleep mode for power saving
+  - Deep sleep mode for power savings
 
   Hardware Setup:
   - Connect an LED to GPIO 16 (ESP8266), GPIO 23 (ESP32), or GPIO 25 (Raspberry Pi Pico W) 

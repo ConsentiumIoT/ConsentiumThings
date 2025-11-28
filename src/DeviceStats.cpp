@@ -66,7 +66,7 @@ String DeviceStats::getResetReason() {
         case ESP_RST_DEEPSLEEP: return "DEEPSLEEP";
         case ESP_RST_BROWNOUT:  return "BROWNOUT";
         case ESP_RST_SDIO:      return "SDIO";
-        default:                return "UNKNOWN";
+        default:                return "FIRST_BOOT";
     }
 }
 

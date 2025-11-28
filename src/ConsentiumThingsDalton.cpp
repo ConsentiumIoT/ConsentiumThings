@@ -104,6 +104,16 @@ double ConsentiumThingsDalton::getBatteryVoltage() {
   return batteryVoltage;
 }
 
+int ConsentiumThingsDalton::getBatteryPercentage(float voltage) {
+    const float minV = 2.68;
+    const float maxV = 4.19;
+
+    if (voltage <= minV) return 0;
+    if (voltage >= maxV) return 100;
+
+    return (int)((voltage - minV) / (maxV - minV) * 100);
+}
+
 void ConsentiumThingsDalton::connectWiFi(const char* ssid, const char* password) {
   WiFi.mode(WIFI_STA);
  
@@ -657,4 +667,8 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       Serial.println(" - No new update available.");
       Serial.println(" ");
   }
+}
+
+void ConsentiumThingsDalton::sleep(unsigned long interval_ms, ConsentiumSleepMode mode){
+    ConsentiumSleep::sleep(interval_ms, mode);
 }

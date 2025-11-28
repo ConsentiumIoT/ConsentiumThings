@@ -117,9 +117,15 @@ void ConsentiumThingsDalton::connectWiFi(const char* ssid, const char* password)
     delay(WIFI_DELAY);
     Serial.print(".");
   }
+
+  this->wifiSSID = String(ssid);
+  this->ipAddress = String(WiFi.localIP().toString());
+
   Serial.println("");
   Serial.print(F("Got IP : "));
-  Serial.println(WiFi.localIP());
+  Serial.println(this->ipAddress);
+
+  deviceStats.begin();
 }
 
 void ConsentiumThingsDalton::smartConnect() {
@@ -151,11 +157,16 @@ void ConsentiumThingsDalton::smartConnect() {
         delay(3000);
         ESP.restart(); // Restart the device to retry
     } else {
+        this->wifiSSID = String(WiFi.SSID());
+        this->ipAddress = String(WiFi.localIP().toString());
+
         Serial.println(F("Connected to WiFi successfully!"));
         Serial.print(F("Device IP: "));
-        Serial.println(WiFi.localIP());
+        Serial.println(this->ipAddress);
         Serial.println(" ");
     }
+
+    deviceStats.begin();
 }
 
 // Function for sending URL
@@ -255,11 +266,16 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
 
   long rssi = WiFi.RSSI();
   float batteryVoltage = getBatteryVoltage();
+  int batteryPercentage = getBatteryPercentage(batteryVoltage);
+  float cpuTemperature = deviceStats.getCPUTemperature();
+  uint32_t freeHeap = deviceStats.getFreeHeap();
+  long uptime = deviceStats.getUptimeSeconds();
+  String resetReason = deviceStats.getResetReason();
 
   char name[50];
   char unit[50];
 
-  JsonDocument jsonDocument;
+  DynamicJsonDocument jsonDocument(1024);
 
   // Create a JSON array for sensor data 
   JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
@@ -279,12 +295,20 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
   boardInfo["signalStrength"] = rssi;
+  boardInfo["cpuTemperature"] = cpuTemperature;
+  boardInfo["wifiSSID"] = this->wifiSSID;
+  boardInfo["ipAddress"] = this->ipAddress;
   if (batteryMonitoringEnabled){
     boardInfo["batteryStrength"] = batteryVoltage;
+    boardInfo["batteryPercentage"] = batteryPercentage;
   }
   else{
     boardInfo["batteryStrength"] = "NA";
+      boardInfo["batteryPercentage"] = "NA";
   }
+  boardInfo["freeHeap"] = freeHeap;
+  boardInfo["uptimeSeconds"] = uptime;
+  boardInfo["resetReason"] = resetReason;
   
   // Serialize the JSON document to a string
   String jsonString;
@@ -330,10 +354,16 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
+      Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
+      Serial.println(" - WiFi SSID: " + this->wifiSSID);
+      Serial.println(" - IP Address: " + this->ipAddress);
       if (batteryMonitoringEnabled){
         Serial.println(" - Battery: " + String(batteryVoltage) + " V");
+        Serial.println(" - Battery Percentage: " + String(batteryPercentage) + " %");
       }
-      
+      Serial.println(" - Free Heap: " + String(freeHeap) + " bytes");
+      Serial.println(" - Uptime: " + String(uptime) + " seconds");
+      Serial.println(" - Reset Reason: " + resetReason);
       Serial.println(" ");
       blinkLED();
     }
@@ -423,61 +453,6 @@ vector<pair<double, String>> ConsentiumThingsDalton::pullData() {
   return result;
 }
 
-// void ConsentiumThingsDalton::checkAndPerformUpdate() {
-//     if(otaFlag == false) {
-//         Serial.println(F("Error: OTA is not enabled, call beginOTA() to enable OTA."));
-//         return;
-//     }
-
-//     const char* remoteVersion = getRemoteFirmwareVersion();
-//     if (!remoteVersion || !firmwareUrl) {
-//         Serial.println(F("Error: Firmware version or URL is null."));
-//         return;
-//     }
-
-//     Serial.println("Firmware Information:");
-//     Serial.println(" - Remote version: " + String(remoteVersion));
-//     Serial.println(" - Device version: " + String(firmwareVersion));
-
-//     if (strcmp(remoteVersion, firmwareVersion) > 0) {
-//         Serial.println(F(" - Update available."));
-//         Serial.println(" ");
-
-//         #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-//             httpUpdate.rebootOnUpdate(true);
-//             t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
-//         #elif defined(ESP8266)
-//             ESPhttpUpdate.rebootOnUpdate(true);
-//             t_httpUpdate_return ret = ESPhttpUpdate.update(client, firmwareUrl);
-//         #endif
-
-//         switch (ret) {
-//             case HTTP_UPDATE_FAILED:
-//               #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-//                 Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
-//                   httpUpdate.getLastError(),
-//                   httpUpdate.getLastErrorString().c_str());
-//               #elif defined(ESP8266)
-//                 Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
-//                   ESPhttpUpdate.getLastError(),
-//                   ESPhttpUpdate.getLastErrorString().c_str());
-//               #endif
-//                 Serial.println(F("Retry in 10 secs!"));
-//                 delay(10000); // Replace with a non-blocking delay
-//                 break;
-//             case HTTP_UPDATE_OK:
-//                 Serial.println(F("Update downloaded."));
-//                 delay(1000);
-//                 Serial.println(F("Restarting!"));
-//                 ESP.restart(); // Ensure restart is intended
-//                 break;
-//         }
-//     } else {
-//         Serial.println(" - No update.");
-//         Serial.println(" ");
-//     }
-// }
-
 void ConsentiumThingsDalton::setSyncInterval(int interval) {
   if (interval > 0) {
     airSyncInterval = interval;
@@ -499,11 +474,16 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   // --- Construct the JSON payload ---
   long rssi = WiFi.RSSI();
   float batteryVoltage = getBatteryVoltage();
+  int batteryPercentage = getBatteryPercentage(batteryVoltage);
+  float cpuTemperature = deviceStats.getCPUTemperature();
+  uint32_t freeHeap = deviceStats.getFreeHeap();
+  long uptime = deviceStats.getUptimeSeconds();
+  String resetReason = deviceStats.getResetReason();
 
   char name[50];
   char unit[50];
 
-  JsonDocument jsonDocument;
+  DynamicJsonDocument jsonDocument(1024);
   JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
 
   for (int i = 0; i < sensor_num; i++) {
@@ -518,7 +498,21 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
   boardInfo["signalStrength"] = rssi;
-  boardInfo["batteryStrength"] = batteryVoltage;
+  boardInfo["wifiSSID"] = this->wifiSSID;
+  boardInfo["ipAddress"] = this->ipAddress;
+  if (batteryMonitoringEnabled){
+    boardInfo["batteryStrength"] = batteryVoltage;
+    boardInfo["batteryPercentage"] = batteryPercentage;
+  }
+  else{
+    boardInfo["batteryStrength"] = "NA";
+      boardInfo["batteryPercentage"] = "NA";
+  }
+
+  boardInfo["cpuTemperature"] = cpuTemperature;
+  boardInfo["freeHeap"] = freeHeap;
+  boardInfo["uptimeSeconds"] = uptime;
+  boardInfo["resetReason"] = resetReason;
   
   String jsonString;
   serializeJsonPretty(jsonDocument, jsonString);
@@ -553,12 +547,20 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       }
 
       Serial.println("Board Information:");
-      Serial.println(" - Firmware Version: " + String(firmwareVersion));
       Serial.println(" - Architecture: " + String(BOARD_TYPE));
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
-      Serial.println(" - Battery: " + String(batteryVoltage) + " V");
+      Serial.println(" - WiFi SSID: " + this->wifiSSID);
+      Serial.println(" - IP Address: " + this->ipAddress);
+      if (batteryMonitoringEnabled){
+        Serial.println(" - Battery: " + String(batteryVoltage) + " V");
+        Serial.println(" - Battery Percentage: " + String(batteryPercentage) + " %");
+      }
+      Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
+      Serial.println(" - Free Heap: " + String(freeHeap) + " bytes");
+      Serial.println(" - Uptime: " + String(uptime) + " seconds");
+      Serial.println(" - Reset Reason: " + resetReason);
       Serial.println(" ");
       
       // Increment counter on successful push and log it
@@ -655,8 +657,4 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       Serial.println(" - No new update available.");
       Serial.println(" ");
   }
-}
-
-void ConsentiumThingsDalton::sleep(unsigned long interval_ms, ConsentiumSleepMode mode){
-    ConsentiumSleep::sleep(interval_ms, mode);
 }

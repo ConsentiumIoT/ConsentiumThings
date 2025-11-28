@@ -3,6 +3,7 @@
 
 #include <PinDefinitions.h>
 #include "ConsentiumSleep.h"
+#include "DeviceStats.h"
 
 using namespace std;
 
@@ -61,6 +62,11 @@ class ConsentiumThingsDalton{
         float refVoltage;
         float dividerRatio;
         double getBatteryVoltage();
+
+        String wifiSSID;
+        String ipAddress;
+
+        DeviceStats deviceStats;
 };
 
 #endif

@@ -3,8 +3,13 @@ const char* send_url = "https://api.consentiumiot.com/v2/updateData?";
 const char* receive_url = "https://api.consentiumiot.com/getData?";
 
 // Board OTA essential URLs
-const char* versionURL = "https://api.consentiumiot.com/firmware/version?";
-const char* firmwareURL = "https://api.consentiumiot.com/firmware/bin?";
+// const char* versionURL = "https://api.consentiumiot.com/firmware/version?";
+// const char* firmwareURL = "https://api.consentiumiot.com/firmware/bin?";
+
+// TODO: Switch to api server for OTA
+// Board OTA essential URLs (for app server)
+const char* versionURL = "https://app.consentiumiot.com/firmware/version?";
+const char* firmwareURL = "https://app.consentiumiot.com/firmware/bin?";
 
 // Board shared variables
 bool otaFlag = false;

@@ -26,8 +26,13 @@ void DeviceStats::initTempSensor() {
 #endif
 }
 
+#if !defined(CONFIG_IDF_TARGET_ESP32S2) && !defined(CONFIG_IDF_TARGET_ESP32C3) && !defined(CONFIG_IDF_TARGET_ESP32S3)
+extern "C" { uint8_t temprature_sens_read(); }
+#endif
+
 float DeviceStats::getCPUTemperature() {
 #if defined(CONFIG_IDF_TARGET_ESP32S2) || defined(CONFIG_IDF_TARGET_ESP32C3) || defined(CONFIG_IDF_TARGET_ESP32S3)
+    // Code for S2, C3, S3 using the new driver
     if (!tempSensorEnabled) return -1.0;
 
     float temp;
@@ -36,11 +41,12 @@ float DeviceStats::getCPUTemperature() {
     return -2.0;
 
 #else
-    extern "C" { uint8_t temprature_sens_read(); }
-
+    // Code for Original ESP32 (Legacy)
     uint8_t t_f = temprature_sens_read();
-    if (t_f == 128) return -1.0;
+    
+    if (t_f == 128) return -1.0; // 128 usually indicates an invalid reading
 
+    // Convert F to C: (F - 32) / 1.8
     return (t_f - 32) / 1.8;
 #endif
 }

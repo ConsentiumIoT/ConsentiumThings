@@ -71,10 +71,10 @@ void loop() {
   // double cin_4_current = board.readCurrentBus(CIN_4);
 
   // Get data from 0-10v voltage sensor, returns as volts (optional)
-  // double vin_1_current = board.readVoltageBus(VIN_1);
-  // double vin_2_current = board.readVoltageBus(VIN_2);
-  // double vin_3_current = board.readVoltageBus(VIN_3);
-  // double vin_4_current = board.readVoltageBus(VIN_4);
+  // double vin_1_voltage = board.readVoltageBus(VIN_1);
+  // double vin_2_voltage = board.readVoltageBus(VIN_2);
+  // double vin_3_voltage = board.readVoltageBus(VIN_3);
+  // double vin_4_voltage = board.readVoltageBus(VIN_4);
 
   vector<double> sensorValues = {data_0};  // Sensor data vector
   

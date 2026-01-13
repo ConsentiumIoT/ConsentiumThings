@@ -385,7 +385,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
 
       // Deserialize the JSON response
       DeserializationError error = deserializeJson(errorDoc, response);
-      const char* message = errorDoc["error"];
+      const char* message = errorDoc["message"];
       Serial.println(message);
 
       return ;

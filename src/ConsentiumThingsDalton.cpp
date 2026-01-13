@@ -510,6 +510,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   boardInfo["signalStrength"] = rssi;
   boardInfo["wifiSSID"] = this->wifiSSID;
   boardInfo["ipAddress"] = this->ipAddress;
+  
   if (batteryMonitoringEnabled){
     boardInfo["batteryStrength"] = batteryVoltage;
     boardInfo["batteryPercentage"] = batteryPercentage;
@@ -613,7 +614,6 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   http.end();
 
   // Part 2: Check for Firmware Update (runs periodically)
-
   // Only proceed if the push counter has reached the desired interval
   if (pushCounter < airSyncInterval) {
     return; // Not time to check yet, so we're done for this cycle.

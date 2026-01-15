@@ -55,6 +55,9 @@ void ConsentiumThingsDalton::startSensing(){
   
   delay(I2C_DELAY);
 
+  ads_1.setGain(GAIN_ONE); 
+  ads_2.setGain(GAIN_ONE); 
+
   if (!ads_1.begin(currentADCAddr)) {
     Serial.println("Failed to initialize current ADC at 0x48");
   }
@@ -70,7 +73,7 @@ double ConsentiumThingsDalton::readCurrentBus(int cpin){
 
 double ConsentiumThingsDalton::readVoltageBus(int vpin){
   int16_t raw = ads_2.readADC_SingleEnded(vpin);
-  return ads_2.computeVolts(raw) * 2; // Account for voltage divider
+  return ads_2.computeVolts(raw) * 3.12766; // Account for voltage divider
 }
 
 void ConsentiumThingsDalton::enableBatteryMonitoring(int pin, float refVoltage, float dividerRatio) {

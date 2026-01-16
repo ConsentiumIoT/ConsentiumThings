@@ -68,7 +68,7 @@ void ConsentiumThingsDalton::startSensing(){
 
 double ConsentiumThingsDalton::readCurrentBus(int cpin){
   int16_t raw = ads_1.readADC_SingleEnded(cpin);
-  return ads_1.computeVolts(raw) * 1000 / 240.0; // Convert to mA assuming 240E resistor
+  return ads_1.computeVolts(raw) * 1000 / 150.0; // Convert to mA assuming 150E resistor
 }
 
 double ConsentiumThingsDalton::readVoltageBus(int vpin){
@@ -316,8 +316,8 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
     boardInfo["batteryPercentage"] = batteryPercentage;
   }
   else{
-    boardInfo["batteryStrength"] = "NA";
-      boardInfo["batteryPercentage"] = "NA";
+    boardInfo["batteryStrength"] = 0.0;
+      boardInfo["batteryPercentage"] = 0.0;
   }
   boardInfo["freeHeap"] = freeHeap;
   boardInfo["uptimeSeconds"] = uptime;
@@ -519,8 +519,8 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
     boardInfo["batteryPercentage"] = batteryPercentage;
   }
   else{
-    boardInfo["batteryStrength"] = "NA";
-      boardInfo["batteryPercentage"] = "NA";
+    boardInfo["batteryStrength"] = 0.0;
+      boardInfo["batteryPercentage"] = 0.0;
   }
 
   boardInfo["cpuTemperature"] = cpuTemperature;

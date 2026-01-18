@@ -316,8 +316,8 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
     boardInfo["batteryPercentage"] = batteryPercentage;
   }
   else{
-    boardInfo["batteryStrength"] = 0.0;
-      boardInfo["batteryPercentage"] = 0.0;
+    boardInfo["batteryStrength"] = -1.0;
+    boardInfo["batteryPercentage"] = -1.0;
   }
   boardInfo["freeHeap"] = freeHeap;
   boardInfo["uptimeSeconds"] = uptime;
@@ -519,8 +519,8 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
     boardInfo["batteryPercentage"] = batteryPercentage;
   }
   else{
-    boardInfo["batteryStrength"] = 0.0;
-      boardInfo["batteryPercentage"] = 0.0;
+    boardInfo["batteryStrength"] = -1.0;
+      boardInfo["batteryPercentage"] = -1.0;
   }
 
   boardInfo["cpuTemperature"] = cpuTemperature;

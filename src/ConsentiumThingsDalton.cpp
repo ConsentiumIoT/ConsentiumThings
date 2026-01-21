@@ -341,9 +341,13 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   // Check for errors
   if (httpCode > 0) {
     if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
+      String response = http.getString();
+      JsonDocument doc; // Adjust size based on response
+      DeserializationError error = deserializeJson(doc, response);
+      const char* message = doc["message"];
       // Print a more human-readable message
       Serial.println(" ");
-      Serial.println("Data successfully sent to the server!");
+      Serial.println(message);
       // Serial.println("Here are the details:");
 
       Serial.println("Sensor Data:");

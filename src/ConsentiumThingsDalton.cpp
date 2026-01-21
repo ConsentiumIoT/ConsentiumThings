@@ -371,7 +371,9 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
-      Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
+      if (cpuTemperature){
+        Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
+      }
       Serial.println(" - WiFi SSID: " + this->wifiSSID);
       Serial.println(" - IP Address: " + this->ipAddress);
       if (batteryMonitoringEnabled){

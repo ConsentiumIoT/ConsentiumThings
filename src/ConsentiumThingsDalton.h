@@ -7,6 +7,7 @@
 
 using namespace std;
 
+// Macro for defining ConsentiumThingsDalton object with OTA version tagging with magic string
 #define ConsentiumDaltonAirUpdate(obj_name, version_str) \
     const char* _ver_tag_##obj_name __attribute__((used)) = "[[[VER:" version_str "]]]"; \
     ConsentiumThingsDalton obj_name(version_str)

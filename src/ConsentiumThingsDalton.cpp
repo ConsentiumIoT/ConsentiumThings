@@ -571,13 +571,15 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
+      if (cpuTemperature>0){
+        Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
+      }
       Serial.println(" - WiFi SSID: " + this->wifiSSID);
       Serial.println(" - IP Address: " + this->ipAddress);
       if (batteryMonitoringEnabled){
         Serial.println(" - Battery: " + String(batteryVoltage) + " V");
         Serial.println(" - Battery Percentage: " + String(batteryPercentage) + " %");
       }
-      Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
       Serial.println(" - Free Heap: " + String(freeHeap) + " bytes");
       Serial.println(" - Uptime: " + String(uptime) + " seconds");
       Serial.println(" - Reset Reason: " + resetReason);

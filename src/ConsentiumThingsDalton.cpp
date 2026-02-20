@@ -288,21 +288,21 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   char name[50];
   char unit[50];
 
-  DynamicJsonDocument jsonDocument(1024);
+  JsonDocument jsonDocument;
 
   // Create a JSON array for sensor data 
-  JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
+  JsonArray sensorDataArray = jsonDocument["sensors"].to<JsonArray>();
 
   // Add sensor data dynamically
   for (int i = 0; i < sensor_num; i++) {
     // Create a JSON object for the current sensor data
-    JsonObject sensorData = sensorDataArray.createNestedObject();
+    JsonObject sensorData = sensorDataArray.add<JsonObject>();
     sensorData["info"] = sensor_info[i];
     sensorData["data"] = String(sensor_data[i], precision);
   }
   
   // Create a JSON object for board information
-  JsonObject boardInfo = jsonDocument.createNestedObject("boardInfo");
+  JsonObject boardInfo = jsonDocument["boardInfo"].to<JsonObject>();
   boardInfo["firmwareVersion"] = firmwareVersion;
   boardInfo["architecture"] = BOARD_TYPE;
   boardInfo["deviceMAC"] = String(macAddr);
@@ -390,7 +390,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.print("Received 422 response:");
       String response = http.getString();
       // Create a small JSON document
-      StaticJsonDocument<128> errorDoc;
+      JsonDocument errorDoc;
 
       // Deserialize the JSON response
       DeserializationError error = deserializeJson(errorDoc, response);
@@ -403,7 +403,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       String response = http.getString();
       http.end();
       Serial.print("Response: ");
-      StaticJsonDocument<128> errorDoc;
+      JsonDocument errorDoc;
       if (deserializeJson(errorDoc, response) == DeserializationError::Ok) {
           Serial.println(errorDoc["message"].as<const char*>());
       } else {
@@ -454,7 +454,7 @@ vector<pair<double, String>> ConsentiumThingsDalton::pullData() {
           String infoKey = "info" + String(i);
           String valueKey = "value" + String(i);
 
-          if (board.containsKey(infoKey) && feed.containsKey(valueKey)) {
+          if (board[infoKey].is<String>() && feed[valueKey].is<double>()) {
             const char* info = board[infoKey];
             double value = feed[valueKey].as<double>();
             result.push_back(std::make_pair(value, String(info)));
@@ -502,16 +502,16 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   char name[50];
   char unit[50];
 
-  DynamicJsonDocument jsonDocument(1024);
-  JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
+  JsonDocument jsonDocument;
+  JsonArray sensorDataArray = jsonDocument["sensors"].to<JsonArray>();
 
   for (int i = 0; i < sensor_num; i++) {
-    JsonObject sensorData = sensorDataArray.createNestedObject();
+    JsonObject sensorData = sensorDataArray.add<JsonObject>();
     sensorData["info"] = sensor_info[i];
     sensorData["data"] = String(sensor_data[i], precision);
   }
   
-  JsonObject boardInfo = jsonDocument.createNestedObject("boardInfo");
+  JsonObject boardInfo = jsonDocument["boardInfo"].to<JsonObject>();
   boardInfo["firmwareVersion"] = firmwareVersion;
   boardInfo["architecture"] = BOARD_TYPE;
   boardInfo["deviceMAC"] = String(macAddr);
@@ -593,7 +593,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       String response = http.getString();
       http.end();
       Serial.print("Response:");
-      StaticJsonDocument<128> errorDoc;
+      JsonDocument errorDoc;
       if (deserializeJson(errorDoc, response) == DeserializationError::Ok) {
           Serial.println(errorDoc["message"].as<const char*>());
       } else {
@@ -604,7 +604,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       String response = http.getString();
       http.end();
       Serial.print("Response: ");
-      StaticJsonDocument<128> errorDoc;
+      JsonDocument errorDoc;
       if (deserializeJson(errorDoc, response) == DeserializationError::Ok) {
           Serial.println(errorDoc["message"].as<const char*>());
       } else {

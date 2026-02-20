@@ -13,10 +13,10 @@
     #include <WiFiManager.h>
     
     #ifdef CONFIG_IDF_TARGET_ESP32C3
-        #define ledPin LED_BUILTIN 
+        #define ledPin 10 
         #define BOARD_TYPE "ESP32-C3"
     #else
-        #define ledPin LED_BUILTIN
+        #define ledPin 2
         #define BOARD_TYPE "ESP32"
     #endif
  

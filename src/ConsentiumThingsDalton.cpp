@@ -109,7 +109,7 @@ double ConsentiumThingsDalton::getBatteryVoltage() {
 
 int ConsentiumThingsDalton::getBatteryPercentage(float voltage) {
     const float minV = 2.68;
-    const float maxV = 4.19;
+    const float maxV = 4.27;
 
     if (voltage <= minV) return 0;
     if (voltage >= maxV) return 100;

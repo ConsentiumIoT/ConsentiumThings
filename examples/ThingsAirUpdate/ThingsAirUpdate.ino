@@ -33,7 +33,7 @@
 #define FIRMWARE_VERSION "0.0"
 
 // Create ConsentiumThings object with firmware version
-ConsentiumThingsDalton board(FIRMWARE_VERSION);
+ConsentiumDaltonAirUpdate(board, FIRMWARE_VERSION);
 
 // WiFi credentials
 const char *ssid = "YOUR_WIFI_SSID";       // Replace with your WiFi SSID

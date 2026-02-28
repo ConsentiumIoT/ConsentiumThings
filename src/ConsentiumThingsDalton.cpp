@@ -288,21 +288,21 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   char name[50];
   char unit[50];
 
-  JsonDocument jsonDocument;
+  DynamicJsonDocument jsonDocument(1024);
 
   // Create a JSON array for sensor data 
-  JsonArray sensorDataArray = jsonDocument["sensors"].to<JsonArray>();
+  JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
 
   // Add sensor data dynamically
   for (int i = 0; i < sensor_num; i++) {
     // Create a JSON object for the current sensor data
-    JsonObject sensorData = sensorDataArray.add<JsonObject>();
+    JsonObject sensorData = sensorDataArray.createNestedObject();
     sensorData["info"] = sensor_info[i];
     sensorData["data"] = String(sensor_data[i], precision);
   }
   
   // Create a JSON object for board information
-  JsonObject boardInfo = jsonDocument["boardInfo"].to<JsonObject>();
+  JsonObject boardInfo = jsonDocument.createNestedObject("boardInfo");
   boardInfo["firmwareVersion"] = firmwareVersion;
   boardInfo["architecture"] = BOARD_TYPE;
   boardInfo["deviceMAC"] = String(macAddr);
@@ -341,13 +341,9 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   // Check for errors
   if (httpCode > 0) {
     if (httpCode == HTTP_CODE_OK || httpCode == HTTP_CODE_CREATED) {
-      String response = http.getString();
-      JsonDocument doc; // Adjust size based on response
-      DeserializationError error = deserializeJson(doc, response);
-      const char* message = doc["message"];
       // Print a more human-readable message
       Serial.println(" ");
-      Serial.println(message);
+      Serial.println("Data successfully sent to the server!");
       // Serial.println("Here are the details:");
 
       Serial.println("Sensor Data:");
@@ -371,9 +367,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
-      if (cpuTemperature>0){
-        Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
-      }
+      Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
       Serial.println(" - WiFi SSID: " + this->wifiSSID);
       Serial.println(" - IP Address: " + this->ipAddress);
       if (batteryMonitoringEnabled){
@@ -390,7 +384,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       Serial.print("Received 422 response:");
       String response = http.getString();
       // Create a small JSON document
-      JsonDocument errorDoc;
+      StaticJsonDocument<128> errorDoc;
 
       // Deserialize the JSON response
       DeserializationError error = deserializeJson(errorDoc, response);
@@ -403,7 +397,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       String response = http.getString();
       http.end();
       Serial.print("Response: ");
-      JsonDocument errorDoc;
+      StaticJsonDocument<128> errorDoc;
       if (deserializeJson(errorDoc, response) == DeserializationError::Ok) {
           Serial.println(errorDoc["message"].as<const char*>());
       } else {
@@ -454,7 +448,7 @@ vector<pair<double, String>> ConsentiumThingsDalton::pullData() {
           String infoKey = "info" + String(i);
           String valueKey = "value" + String(i);
 
-          if (board[infoKey].is<String>() && feed[valueKey].is<double>()) {
+          if (board.containsKey(infoKey) && feed.containsKey(valueKey)) {
             const char* info = board[infoKey];
             double value = feed[valueKey].as<double>();
             result.push_back(std::make_pair(value, String(info)));
@@ -502,16 +496,16 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   char name[50];
   char unit[50];
 
-  JsonDocument jsonDocument;
-  JsonArray sensorDataArray = jsonDocument["sensors"].to<JsonArray>();
+  DynamicJsonDocument jsonDocument(1024);
+  JsonArray sensorDataArray = jsonDocument["sensors"].createNestedArray("sensorData");
 
   for (int i = 0; i < sensor_num; i++) {
-    JsonObject sensorData = sensorDataArray.add<JsonObject>();
+    JsonObject sensorData = sensorDataArray.createNestedObject();
     sensorData["info"] = sensor_info[i];
     sensorData["data"] = String(sensor_data[i], precision);
   }
   
-  JsonObject boardInfo = jsonDocument["boardInfo"].to<JsonObject>();
+  JsonObject boardInfo = jsonDocument.createNestedObject("boardInfo");
   boardInfo["firmwareVersion"] = firmwareVersion;
   boardInfo["architecture"] = BOARD_TYPE;
   boardInfo["deviceMAC"] = String(macAddr);
@@ -571,15 +565,13 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
-      if (cpuTemperature>0){
-        Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
-      }
       Serial.println(" - WiFi SSID: " + this->wifiSSID);
       Serial.println(" - IP Address: " + this->ipAddress);
       if (batteryMonitoringEnabled){
         Serial.println(" - Battery: " + String(batteryVoltage) + " V");
         Serial.println(" - Battery Percentage: " + String(batteryPercentage) + " %");
       }
+      Serial.println(" - CPU Temperature: " + String(cpuTemperature) + " °C");
       Serial.println(" - Free Heap: " + String(freeHeap) + " bytes");
       Serial.println(" - Uptime: " + String(uptime) + " seconds");
       Serial.println(" - Reset Reason: " + resetReason);
@@ -593,7 +585,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       String response = http.getString();
       http.end();
       Serial.print("Response:");
-      JsonDocument errorDoc;
+      StaticJsonDocument<128> errorDoc;
       if (deserializeJson(errorDoc, response) == DeserializationError::Ok) {
           Serial.println(errorDoc["message"].as<const char*>());
       } else {
@@ -604,7 +596,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       String response = http.getString();
       http.end();
       Serial.print("Response: ");
-      JsonDocument errorDoc;
+      StaticJsonDocument<128> errorDoc;
       if (deserializeJson(errorDoc, response) == DeserializationError::Ok) {
           Serial.println(errorDoc["message"].as<const char*>());
       } else {

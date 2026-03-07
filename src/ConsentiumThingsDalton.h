@@ -31,7 +31,8 @@ class ConsentiumThingsDalton{
         
         // WiFi Management
         void connectWiFi(const char*, const char*);
-        void smartConnect();
+        //void smartConnect();
+        void smartConnect(void (*displayCallback)(const char* ssid, const char* password) = nullptr);
 
         
         // Current and Voltage Sensing
@@ -47,6 +48,9 @@ class ConsentiumThingsDalton{
 
         // Sleep
         void sleep(unsigned long interval_ms, ConsentiumSleepMode mode = CONSENTIUM_DEEP_SLEEP);
+
+        String getIPAddress();
+
     private:
         WiFiClientSecure client;
         WiFiManager wm;

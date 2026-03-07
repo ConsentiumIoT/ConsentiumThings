@@ -141,14 +141,14 @@ void ConsentiumThingsDalton::connectWiFi(const char* ssid, const char* password)
   deviceStats.begin();
 }
 
-void ConsentiumThingsDalton::smartConnect() {
+void ConsentiumThingsDalton::smartConnect(void (*displayCallback)(const char* ssid, const char* password)) {
     wm.setDebugOutput(false); // Disable debug output
 
     char apName[30];
     char apPassword[30];
 
-    sprintf(apName, "ConsentiumIoT_AP_%c%c%c", randomChar(random(62)), randomChar(random(62)), randomChar(random(62)));
-    sprintf(apPassword, "consentium%c%c%c", randomChar(random(62)), randomChar(random(62)), randomChar(random(62)));
+    sprintf(apName, "Edgedev_%c%c%c", randomChar(random(62)), randomChar(random(62)), randomChar(random(62)));
+    sprintf(apPassword, "edgedev%c%c%c", randomChar(random(62)), randomChar(random(62)), randomChar(random(62)));
 
     Serial.println(F("\n========== WiFi Auto-Connect =========="));
     Serial.println(F("Starting WiFi access point setup..."));
@@ -159,7 +159,12 @@ void ConsentiumThingsDalton::smartConnect() {
     Serial.print(F("Password: ")); Serial.println(apPassword);
     Serial.println(F("---------------------------------------"));
 
-    // Attempt auto-connect with specified AP name and password
+    // --- NEW: Trigger the OLED display callback BEFORE blocking ---
+    if (displayCallback != nullptr) {
+        displayCallback(apName, apPassword);
+    }
+
+    // Attempt auto-connect with specified AP name and password (Blocks here)
     bool res = wm.autoConnect(apName, apPassword);
 
     deviceMAC(macAddr);
@@ -180,6 +185,10 @@ void ConsentiumThingsDalton::smartConnect() {
     }
 
     deviceStats.begin();
+}
+
+String ConsentiumThingsDalton::getIPAddress() {
+    return this->ipAddress;
 }
 
 // Function for sending URL

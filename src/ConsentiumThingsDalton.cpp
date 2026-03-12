@@ -6,6 +6,9 @@
   X509List cert(consentium_root_ca);
 #endif
 
+#define ARCH_TAG "[[[ARC:" BOARD_TYPE "]]]"
+const char* FIRMWARE_ARCHITECTURE __attribute__((used)) = ARCH_TAG;
+
 void timeSync(){
     configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
     Serial.println(F("Waiting for NTP time sync"));

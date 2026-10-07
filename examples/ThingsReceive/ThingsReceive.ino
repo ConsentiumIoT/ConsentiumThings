@@ -2,15 +2,14 @@
   Consentium IoT - Edge Board Library
   -------------------------------------------------
   This library is designed for use with Consentium IoT's 
-  ESP8266, ESP32, and Raspberry Pi Pico W-compatible edge boards.
+  ESP32-compatible edge boards.
 
   Features:
   - Seamless WiFi connectivity
   - REST-based data reception and integration with Consentium IoT Cloud
 
   Hardware Setup:
-  - Connect an LED to GPIO 16 (ESP8266), GPIO 23 (ESP32), or GPIO 25 (Raspberry Pi Pico W) 
-    to indicate REST events.
+  - Connect an LED to GPIO 23 (ESP32) to indicate REST events.
 
   Tutorials and Documentation:
   Visit us at: https://docs.consentiumiot.com/code-usage/consentiumthings-arduino-data-receiver-api

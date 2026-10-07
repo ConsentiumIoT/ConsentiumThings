@@ -1,0 +1,50 @@
+#######################################
+# Syntax Coloring Map For ConsentiumThings
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+ConsentiumThingsDalton	KEYWORD1
+ConsentiumDaltonAirUpdate	KEYWORD1
+ConsentiumSleep	KEYWORD1
+ConsentiumSleepMode	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+setSyncInterval	KEYWORD2
+airSync	KEYWORD2
+enableAirUpdate	KEYWORD2
+enableSend	KEYWORD2
+enableReceive	KEYWORD2
+pullData	KEYWORD2
+pushData	KEYWORD2
+connectWiFi	KEYWORD2
+smartConnect	KEYWORD2
+startSensing	KEYWORD2
+readCurrentBus	KEYWORD2
+readVoltageBus	KEYWORD2
+enableBatteryMonitoring	KEYWORD2
+disableBatteryMonitoring	KEYWORD2
+getBatteryPercentage	KEYWORD2
+sleep	KEYWORD2
+getIPAddress	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+ADC_IN	LITERAL1
+VIN_1	LITERAL1
+VIN_2	LITERAL1
+VIN_3	LITERAL1
+VIN_4	LITERAL1
+CIN_1	LITERAL1
+CIN_2	LITERAL1
+CIN_3	LITERAL1
+CIN_4	LITERAL1
+LOW_PRE	LITERAL1
+MID_PRE	LITERAL1
+HIGH_PRE	LITERAL1
+CONSENTIUM_DEEP_SLEEP	LITERAL1
+CONSENTIUM_LIGHT_SLEEP	LITERAL1

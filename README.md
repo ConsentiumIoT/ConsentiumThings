@@ -1,7 +1,9 @@
 # ConsentiumThings
 
 **Description:**  
-The **ConsentiumThingsDalton** project demonstrates how to use the ConsentiumThings IoT board to read sensor data and transmit it over HTTPS to the ConsentiumThings cloud. This library supports **ESP32**, **ESP8266**, and **Raspberry Pi Pico W** edge devices.
+The **ConsentiumThingsDalton** project demonstrates how to use the ConsentiumThings IoT board to read sensor data and transmit it over HTTPS to the ConsentiumThings cloud. This library supports **ESP32**-class edge devices (e.g. ESP32, ESP32-C3, ESP32-S2, ESP32-S3).
+
+> **Note:** Support for ESP8266 and Raspberry Pi Pico W has been dropped.
 
 ---
 
@@ -10,7 +12,7 @@ The **ConsentiumThingsDalton** project demonstrates how to use the ConsentiumThi
 1. **Clone the Repository**: Clone this repository to your local machine.
 2. **Set Up Arduino IDE**:
    - Install the [Arduino IDE](https://www.arduino.cc/en/software).
-   - Install the necessary board support packages for ESP32, ESP8266, or Raspberry Pi Pico W.
+   - Install the ESP32 board support package.
 3. **Connect the Board**: Connect your **ConsentiumThingsDalton** board to your computer via USB.
 4. **Load the Code**:
    - Open the Arduino IDE and load the `ThingsUpdate.ino` file.
@@ -39,10 +41,8 @@ The **ConsentiumThingsDalton** project demonstrates how to use the ConsentiumThi
    - `sensorCount` variable to match the number of connected sensors.
 
 - **REST Event LED Indication**:  
-   Connect an LED to the following pins for visual REST event feedback:
-   - **GPIO 16** for ESP8266  
+   Connect an LED to the following pin for visual REST event feedback:
    - **GPIO 23** for ESP32  
-   - **GPIO 25** for Raspberry Pi Pico W  
 
 ---
 
@@ -75,7 +75,4 @@ For significant changes, open an issue first to discuss your ideas.
 
 This project leverages open-source tools and libraries:
 - **Arduino IDE and ArduinoCore-API**: Developed by the Arduino team ([GPL License](https://arduino.cc)).
-- **RP2040 GCC-based Toolchain**: By Earle Philhower ([GPL License](https://github.com/earlephilhower/pico-quick-toolchain)).
-- **Pico-SDK**: By Raspberry Pi (Trading) Ltd ([BSD 3-Clause License](https://github.com/raspberrypi/pico-sdk)).
-- **ESP8266 Libraries**: Modified from ESP8266 Core Development Team ([GitHub](https://github.com/esp8266/Arduino)).
 - **ESP32 Libraries**: Developed by Espressif Systems ([GitHub](https://github.com/espressif/arduino-esp32)).

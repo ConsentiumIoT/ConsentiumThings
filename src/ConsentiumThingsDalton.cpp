@@ -1,29 +1,13 @@
 #include "ConsentiumThingsDalton.h"
-#include "certs/ServerCertificates.h"
-#include "utils/ConsentiumEssentials.h"
+#include "internal/BoardConfig.h"
+#include "internal/Endpoints.h"
+#include "internal/ServerCertificates.h"
 
-#if defined(ESP8266)
-  X509List cert(consentium_root_ca);
-#endif
-
-#define ARCH_TAG "[[[ARC:" BOARD_TYPE "]]]"
-const char* FIRMWARE_ARCHITECTURE __attribute__((used)) = ARCH_TAG;
-
-void timeSync(){
-    configTime(5.5 * 3600, 0, "time.google.com", "time.windows.com");
-    Serial.println(F("Waiting for NTP time sync"));
-    time_t now = time(nullptr);
-    while (now < NTP_SYNC_WAIT) {
-      delay(500);
-      now = time(nullptr);
-    }
-    struct tm timeinfo;
-    gmtime_r(&now, &timeinfo); 
-}
+namespace {
 
 inline void blinkLED() {
     static bool ledState = false;
-    digitalWrite(ledPin, ledState);
+    digitalWrite(CONSENTIUM_LED_PIN, ledState);
     ledState = !ledState;
 }
 
@@ -33,22 +17,20 @@ char randomChar(uint8_t num) {
   return '0' + (num - 52);
 }
 
-inline void deviceMAC(char *macAddr) {
-  #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-    uint8_t baseMac[6];
-    esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
-    
-    if (ret == ESP_OK) {
-      sprintf(macAddr, "%02X:%02X:%02X:%02X:%02X:%02X", 
-              baseMac[0], baseMac[1], baseMac[2], 
-              baseMac[3], baseMac[4], baseMac[5]);
-    } else {
-      strcpy(macAddr, "00:00:00:00:00:00");  // Error fallback
-    }
-  #elif defined(ESP8266)
-    sprintf(macAddr, WiFi.macAddress().c_str());
-  #endif
+inline void deviceMAC(char *out) {
+  uint8_t baseMac[6];
+  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+  
+  if (ret == ESP_OK) {
+    sprintf(out, "%02X:%02X:%02X:%02X:%02X:%02X", 
+            baseMac[0], baseMac[1], baseMac[2], 
+            baseMac[3], baseMac[4], baseMac[5]);
+  } else {
+    strcpy(out, "00:00:00:00:00:00");  // Error fallback
+  }
 }
+
+} // namespace
 
 ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {} // Default constructor without firmware version
 ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : firmwareVersion(firmware_version) {} //Constructor when firmware version is passed
@@ -56,15 +38,15 @@ ConsentiumThingsDalton::ConsentiumThingsDalton(const char* firmware_version) : f
 void ConsentiumThingsDalton::startSensing(){
   Wire.begin(5, 6);
   
-  delay(I2C_DELAY);
+  delay(CONSENTIUM_I2C_DELAY);
 
   ads_1.setGain(GAIN_ONE); 
   ads_2.setGain(GAIN_ONE); 
 
-  if (!ads_1.begin(currentADCAddr)) {
+  if (!ads_1.begin(CONSENTIUM_CURRENT_ADC_ADDR)) {
     Serial.println("Failed to initialize current ADC at 0x48");
   }
-  if (!ads_2.begin(voltageADCAddr)) {
+  if (!ads_2.begin(CONSENTIUM_VOLTAGE_ADC_ADDR)) {
     Serial.println("Failed to initialize voltage ADC at 0x49");
   }
 }
@@ -130,7 +112,7 @@ void ConsentiumThingsDalton::connectWiFi(const char* ssid, const char* password)
   
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
-    delay(WIFI_DELAY);
+    delay(CONSENTIUM_WIFI_DELAY);
     Serial.print(".");
   }
 
@@ -196,18 +178,13 @@ String ConsentiumThingsDalton::getIPAddress() {
 
 // Function for sending URL
 void ConsentiumThingsDalton::enableSend(const char* key, const char* board_id) {
-  pinMode(ledPin, OUTPUT);
+  pinMode(CONSENTIUM_LED_PIN, OUTPUT);
     
-  #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-    client.setCACert(consentium_root_ca);
-  #elif defined(ESP8266)
-    timeSync();
-    client.setTrustAnchors(&cert);
-  #endif
+  client.setCACert(consentium_root_ca);
   
   // create the send URL
-  sendUrl = String(send_url);
-  sendUrl.reserve(ARRAY_RESERVE);
+  sendUrl = String(consentium::endpoints::kSend);
+  sendUrl.reserve(CONSENTIUM_ARRAY_RESERVE);
   sendUrl.concat("sendKey=");
   sendUrl.concat(String(key));
   sendUrl.concat("&boardKey=");
@@ -216,18 +193,13 @@ void ConsentiumThingsDalton::enableSend(const char* key, const char* board_id) {
 
 // Function for receiving URL
 void ConsentiumThingsDalton::enableReceive(const char* key, const char* board_id) {
-  pinMode(ledPin, OUTPUT);
+  pinMode(CONSENTIUM_LED_PIN, OUTPUT);
     
-  #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-    client.setCACert(consentium_root_ca);
-  #elif defined(ESP8266)
-    timeSync();
-    client.setTrustAnchors(&cert);
-  #endif
+  client.setCACert(consentium_root_ca);
   
   // create the receive URL
-  receiveUrl = String(receive_url);
-  receiveUrl.reserve(ARRAY_RESERVE);
+  receiveUrl = String(consentium::endpoints::kReceive);
+  receiveUrl.reserve(CONSENTIUM_ARRAY_RESERVE);
   receiveUrl.concat("recents=");
   receiveUrl.concat("true");
   receiveUrl.concat("&receiveKey=");
@@ -238,28 +210,23 @@ void ConsentiumThingsDalton::enableReceive(const char* key, const char* board_id
 
 // Function for OTA receiving URL
 void ConsentiumThingsDalton::enableAirUpdate(const char* key, const char* board_id) {
-  pinMode(ledPin, OUTPUT);
+  pinMode(CONSENTIUM_LED_PIN, OUTPUT);
     
-  #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-    client.setCACert(consentium_root_ca);
-  #elif defined(ESP8266)
-    timeSync();
-    client.setTrustAnchors(&cert);
-  #endif
+  client.setCACert(consentium_root_ca);
 
   otaFlag = true;
   
   // create the firmware version URL
-  versionUrl = String(versionURL);
-  versionUrl.reserve(ARRAY_RESERVE);
+  versionUrl = String(consentium::endpoints::kVersion);
+  versionUrl.reserve(CONSENTIUM_ARRAY_RESERVE);
   versionUrl.concat("receiveKey=");
   versionUrl.concat(String(key));
   versionUrl.concat("&boardKey=");
   versionUrl.concat(String(board_id));
 
   // create the firmware download URL
-  firmwareUrl = String(firmwareURL);
-  firmwareUrl.reserve(ARRAY_RESERVE);
+  firmwareUrl = String(consentium::endpoints::kFirmware);
+  firmwareUrl.reserve(CONSENTIUM_ARRAY_RESERVE);
   firmwareUrl.concat("receiveKey=");
   firmwareUrl.concat(String(key));
   firmwareUrl.concat("&boardKey=");
@@ -316,7 +283,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
   // Create a JSON object for board information
   JsonObject boardInfo = jsonDocument.createNestedObject("boardInfo");
   boardInfo["firmwareVersion"] = firmwareVersion;
-  boardInfo["architecture"] = BOARD_TYPE;
+  boardInfo["architecture"] = CONSENTIUM_BOARD_TYPE;
   boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
   boardInfo["signalStrength"] = rssi;
@@ -375,7 +342,7 @@ void ConsentiumThingsDalton::pushData(vector<double> sensor_data, const char* se
       }
 
       Serial.println("Board Information:");
-      Serial.println(" - Architecture: " + String(BOARD_TYPE));
+      Serial.println(" - Architecture: " + String(CONSENTIUM_BOARD_TYPE));
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
@@ -519,7 +486,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   
   JsonObject boardInfo = jsonDocument.createNestedObject("boardInfo");
   boardInfo["firmwareVersion"] = firmwareVersion;
-  boardInfo["architecture"] = BOARD_TYPE;
+  boardInfo["architecture"] = CONSENTIUM_BOARD_TYPE;
   boardInfo["deviceMAC"] = String(macAddr);
   boardInfo["statusOTA"] = otaFlag;
   boardInfo["signalStrength"] = rssi;
@@ -573,7 +540,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
       }
 
       Serial.println("Board Information:");
-      Serial.println(" - Architecture: " + String(BOARD_TYPE));
+      Serial.println(" - Architecture: " + String(CONSENTIUM_BOARD_TYPE));
       Serial.println(" - Device MAC: " + String(macAddr));
       Serial.println(" - OTA enabled: " + String(otaFlag ? "Yes" : "No"));
       Serial.println(" - Signal: " + String(rssi) + " dBm");
@@ -659,24 +626,13 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
     Serial.println(F(" - Update available. Starting OTA update..."));
     Serial.println(" ");
 
-    #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-        httpUpdate.rebootOnUpdate(true);
-        t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
-    #elif defined(ESP8266)
-        ESPhttpUpdate.rebootOnUpdate(true);
-        t_httpUpdate_return ret = ESPhttpUpdate.update(client, firmwareUrl);
-    #endif
+    httpUpdate.rebootOnUpdate(true);
+    t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
 
     if (ret == HTTP_UPDATE_FAILED) {
-      #if defined(ESP32) || defined(ARDUINO_RASPBERRY_PI_PICO_W)
-        Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
-          httpUpdate.getLastError(),
-          httpUpdate.getLastErrorString().c_str());
-      #elif defined(ESP8266)
-        Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
-          ESPhttpUpdate.getLastError(),
-          ESPhttpUpdate.getLastErrorString().c_str());
-      #endif
+      Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
+        httpUpdate.getLastError(),
+        httpUpdate.getLastErrorString().c_str());
     }
   } else {
       Serial.println(" - No new update available.");

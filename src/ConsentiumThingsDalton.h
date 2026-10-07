@@ -1,11 +1,24 @@
 #ifndef ConsentiumThingsDalton_h
 #define ConsentiumThingsDalton_h
 
-#include <PinDefinitions.h>
+#include <Arduino.h>
+#include <WiFi.h>
+#include <Wire.h>
+#include <vector>
+#include <HTTPClient.h>
+#include <HTTPUpdate.h>
+#include <ArduinoJson.h>
+#include <WiFiClientSecure.h>
+#include <Adafruit_ADS1X15.h>
+#include <WiFiManager.h>
+
+#include "ConsentiumConfig.h"
 #include "ConsentiumSleep.h"
 #include "DeviceStats.h"
 
-using namespace std;
+// Kept for backward compatibility: sketches use unqualified vector<> / pair<>.
+using std::vector;
+using std::pair;
 
 // Macro for defining ConsentiumThingsDalton object with OTA version tagging with magic string
 #define ConsentiumDaltonAirUpdate(obj_name, version_str) \
@@ -64,8 +77,11 @@ class ConsentiumThingsDalton{
         String firmwareUrl;
         const char* firmwareVersion;
         const char* getRemoteFirmwareVersion();
-        int airSyncInterval;
-        int pushCounter;   
+        int airSyncInterval = 0;
+        int pushCounter = 0;   
+
+        bool otaFlag = false;
+        char macAddr[18] = {0};
         
         bool batteryMonitoringEnabled = false;
         int batteryPin;

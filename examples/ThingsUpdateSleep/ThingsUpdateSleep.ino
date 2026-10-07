@@ -2,7 +2,7 @@
   Consentium IoT - Edge Board Library
   -------------------------------------------------
   This library is designed for use with Consentium IoT's 
-  ESP8266, ESP32, and Raspberry Pi Pico W-compatible edge boards.
+  ESP32-compatible edge boards.
 
   Features:
   - Seamless WiFi connectivity
@@ -10,8 +10,7 @@
   - Deep sleep mode for power savings
 
   Hardware Setup:
-  - Connect an LED to GPIO 16 (ESP8266), GPIO 23 (ESP32), or GPIO 25 (Raspberry Pi Pico W) 
-    to indicate REST events.
+  - Connect an LED to GPIO 23 (ESP32) to indicate REST events.
 
   Tutorials and Documentation:
   Visit us at: https://docs.consentiumiot.com/code-usage/consentiumthings-arduino-api
@@ -36,8 +35,8 @@ const char *pass = "YOUR_WIFI_PASSWORD";  // WiFi password
 const char *SendApiKey = "YOUR_API_KEY";      // API key for sending data
 const char *BoardApiKey = "YOUR_BOARD_API_KEY"; // API key for the board
 
-// Define the interval for data sending
-constexpr int interval = 5000;  // Data transmission interval (5 seconds for free tier)
+// Define the sleep interval 
+constexpr int sleepInterval = 60000;  // (60 seconds)
 
 void setup() {
   // Start serial communication for debugging
@@ -71,7 +70,7 @@ void setup() {
   board.pushData(sensorValues, sensorInfo, LOW_PRE);
 
   // Put device into deep sleep for 60 seconds
-  board.sleep(60000);
+  board.sleep(sleepInterval);
 }
 
 void loop() {

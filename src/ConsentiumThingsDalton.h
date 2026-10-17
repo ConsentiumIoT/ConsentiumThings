@@ -20,9 +20,10 @@
 using std::vector;
 using std::pair;
 
-// Macro for defining ConsentiumThingsDalton object with OTA version tagging with magic string
+// Macro for defining ConsentiumThingsDalton object with OTA version and board architecture tagging with magic strings
 #define ConsentiumDaltonAirUpdate(obj_name, version_str) \
     const char* _ver_tag_##obj_name __attribute__((used)) = "[[[VER:" version_str "]]]"; \
+    const char* _arch_tag_##obj_name __attribute__((used)) = "[[[ARCH:" CONSENTIUM_BOARD_TYPE "]]]"; \
     ConsentiumThingsDalton obj_name(version_str)
 
 class ConsentiumThingsDalton{

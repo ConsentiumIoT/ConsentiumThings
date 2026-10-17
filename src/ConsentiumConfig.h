@@ -24,5 +24,20 @@
 #define MID_PRE 4
 #define HIGH_PRE 7
 
+// Auto-detect ESP32 family board architecture at compile time
+#if defined(CONFIG_IDF_TARGET_ESP32C3)
+    #define CONSENTIUM_BOARD_TYPE "ESP32-C3"
+#elif defined(CONFIG_IDF_TARGET_ESP32S2)
+    #define CONSENTIUM_BOARD_TYPE "ESP32-S2"
+#elif defined(CONFIG_IDF_TARGET_ESP32S3)
+    #define CONSENTIUM_BOARD_TYPE "ESP32-S3"
+#elif defined(CONFIG_IDF_TARGET_ESP32C6)
+    #define CONSENTIUM_BOARD_TYPE "ESP32-C6"
+#elif defined(CONFIG_IDF_TARGET_ESP32H2)
+    #define CONSENTIUM_BOARD_TYPE "ESP32-H2"
+#else
+    #define CONSENTIUM_BOARD_TYPE "ESP32"
+#endif
+
 #endif // CONSENTIUM_CONFIG_H
 

@@ -4,12 +4,12 @@
 // Internal board and library settings.
 // Only include this from library .cpp files — never from a public header.
 
+#include "../ConsentiumConfig.h"
+
 #ifdef CONFIG_IDF_TARGET_ESP32C3
     #define CONSENTIUM_LED_PIN 10
-    #define CONSENTIUM_BOARD_TYPE "ESP32-C3"
 #else
     #define CONSENTIUM_LED_PIN 2
-    #define CONSENTIUM_BOARD_TYPE "ESP32"
 #endif
 
 // I2C addresses of the onboard ADS1115 ADCs

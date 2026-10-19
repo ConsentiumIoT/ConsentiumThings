@@ -78,7 +78,7 @@ class ConsentiumThingsDalton{
         String firmwareUrl;
         const char* firmwareVersion;
         const char* getRemoteFirmwareVersion();
-        int airSyncInterval = 0;
+        int airSyncInterval = 1;
         int pushCounter = 0;   
 
         bool otaFlag = false;

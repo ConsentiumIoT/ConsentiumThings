@@ -30,6 +30,59 @@ inline void deviceMAC(char *out) {
   }
 }
 
+// Compare two dot-separated version strings numerically (e.g. "0.10" > "0.9", "1.0" == "1.0.0").
+// Returns > 0 if v1 > v2, < 0 if v1 < v2, and 0 if equal.
+int compareVersions(const char* v1, const char* v2) {
+  if (!v1 || !v2) return 0;
+
+  // Skip leading whitespace and optional 'v'/'V' prefix
+  while (*v1 == ' ' || *v1 == '\t') v1++;
+  while (*v2 == ' ' || *v2 == '\t') v2++;
+  if (*v1 == 'v' || *v1 == 'V') v1++;
+  if (*v2 == 'v' || *v2 == 'V') v2++;
+
+  while (*v1 != '\0' || *v2 != '\0') {
+    long num1 = 0;
+    long num2 = 0;
+
+    if (*v1 >= '0' && *v1 <= '9') {
+      char* end1 = nullptr;
+      num1 = strtol(v1, &end1, 10);
+      v1 = end1;
+    }
+
+    if (*v2 >= '0' && *v2 <= '9') {
+      char* end2 = nullptr;
+      num2 = strtol(v2, &end2, 10);
+      v2 = end2;
+    }
+
+    if (num1 != num2) {
+      return (num1 > num2) ? 1 : -1;
+    }
+
+    // Compare any non-numeric characters within the current segment (e.g., pre-release tags)
+    while (*v1 != '\0' && *v1 != '.' && *v2 != '\0' && *v2 != '.') {
+      if (*v1 != *v2) {
+        return ((unsigned char)*v1 > (unsigned char)*v2) ? 1 : -1;
+      }
+      v1++;
+      v2++;
+    }
+
+    // If one segment still has non-dot characters remaining, compare accordingly
+    if ((*v1 != '\0' && *v1 != '.') || (*v2 != '\0' && *v2 != '.')) {
+      if (*v1 == '\0' || *v1 == '.') return -1;
+      if (*v2 == '\0' || *v2 == '.') return 1;
+    }
+
+    if (*v1 == '.') v1++;
+    if (*v2 == '.') v2++;
+  }
+
+  return 0;
+}
+
 } // namespace
 
 ConsentiumThingsDalton::ConsentiumThingsDalton() : firmwareVersion("0.0") {} // Default constructor without firmware version
@@ -234,13 +287,21 @@ void ConsentiumThingsDalton::enableAirUpdate(const char* key, const char* board_
 }
 
 const char* ConsentiumThingsDalton::getRemoteFirmwareVersion() {
+  if (versionUrl.isEmpty()) {
+    return nullptr;
+  }
   http.begin(client, versionUrl);
   //Serial.println(versionUrl); //Debug
   int httpCode = http.GET();
   static char versionBuffer[128]; // Assuming version won't exceed 128 characters
-  if (httpCode == 200) {
-    http.getString().toCharArray(versionBuffer, sizeof(versionBuffer));
-    http.end(); 
+  if (httpCode == HTTP_CODE_OK) {
+    String payload = http.getString();
+    http.end();
+    payload.trim();
+    if (payload.isEmpty()) {
+      return nullptr;
+    }
+    payload.toCharArray(versionBuffer, sizeof(versionBuffer));
     return versionBuffer;
   } else {
     http.end();
@@ -613,7 +674,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   }
 
   const char* remoteVersion = getRemoteFirmwareVersion();
-  if (!remoteVersion || !firmwareUrl) {
+  if (!remoteVersion || strlen(remoteVersion) == 0 || !firmwareVersion || strlen(firmwareVersion) == 0 || firmwareUrl.isEmpty()) {
     Serial.println(F("Error: Firmware version or URL is null. Cannot check for updates."));
     return;
   }
@@ -622,21 +683,35 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   Serial.println(" - Remote version: " + String(remoteVersion));
   Serial.println(" - Device version: " + String(firmwareVersion));
 
-  if (strcmp(remoteVersion, firmwareVersion) > 0) {
-    Serial.println(F(" - Update available. Starting OTA update..."));
+  int updateValue = compareVersions(remoteVersion, firmwareVersion);
+  if (updateValue == 0) {
+    Serial.println(F(" - No new update available."));
     Serial.println(" ");
+    return;
+  }
 
-    httpUpdate.rebootOnUpdate(true);
-    t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
+  if (updateValue > 0) {
+    Serial.println(F(" - Update available. Starting OTA update..."));
+  } else {
+    Serial.println(F(" - Roll back update available. Starting OTA update..."));
+  }
+  Serial.println(" ");
 
-    if (ret == HTTP_UPDATE_FAILED) {
+  httpUpdate.rebootOnUpdate(true);
+  t_httpUpdate_return ret = httpUpdate.update(client, firmwareUrl);
+
+  switch (ret) {
+    case HTTP_UPDATE_FAILED:
       Serial.printf("HTTP_UPDATE_FAILED Error (%d): %s\n",
         httpUpdate.getLastError(),
         httpUpdate.getLastErrorString().c_str());
-    }
-  } else {
-      Serial.println(" - No new update available.");
-      Serial.println(" ");
+      break;
+    case HTTP_UPDATE_NO_UPDATES:
+      Serial.println(F("HTTP_UPDATE_NO_UPDATES"));
+      break;
+    case HTTP_UPDATE_OK:
+      Serial.println(F("HTTP_UPDATE_OK"));
+      break;
   }
 }
 

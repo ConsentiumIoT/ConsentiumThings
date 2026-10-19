@@ -622,7 +622,7 @@ void ConsentiumThingsDalton::airSync(vector<double> sensor_data, const char* sen
   Serial.println(" - Remote version: " + String(remoteVersion));
   Serial.println(" - Device version: " + String(firmwareVersion));
 
-  if (strcmp(remoteVersion, firmwareVersion) > 0) {
+  if (strcmp(remoteVersion, firmwareVersion) != 0) {
     Serial.println(F(" - Update available. Starting OTA update..."));
     Serial.println(" ");
 

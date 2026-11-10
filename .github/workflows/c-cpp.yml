@@ -1,0 +1,43 @@
+name: Compile Examples
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        board:
+          # Standard ESP32 (e.g., ESP32 Dev Module)
+          - fqbn: esp32:esp32:esp32
+            platform-name: esp32:esp32
+            platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+            
+          # ESP32-C3
+          - fqbn: esp32:esp32:esp32c3
+            platform-name: esp32:esp32
+            platform-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Compile examples
+        uses: arduino/compile-sketches@v1
+        with:
+          fqbn: ${{ matrix.board.fqbn }}
+          # The action will download the core from the provided source-url
+          platforms: |
+            - name: ${{ matrix.board.platform-name }}
+              source-url: ${{ matrix.board.platform-url }}
+          libraries: |
+            - source-path: ./
+            - name: Adafruit ADS1X15
+            - name: ArduinoJson
+            - name: WiFiManager

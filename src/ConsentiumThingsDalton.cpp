@@ -5,83 +5,83 @@
 
 namespace {
 
-inline void blinkLED() {
-    static bool ledState = false;
-    digitalWrite(CONSENTIUM_LED_PIN, ledState);
-    ledState = !ledState;
-}
-
-char randomChar(uint8_t num) {
-  if (num < 26) return 'A' + num;
-  if (num < 52) return 'a' + (num - 26);
-  return '0' + (num - 52);
-}
-
-inline void deviceMAC(char *out) {
-  uint8_t baseMac[6];
-  esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
-  
-  if (ret == ESP_OK) {
-    sprintf(out, "%02X:%02X:%02X:%02X:%02X:%02X", 
-            baseMac[0], baseMac[1], baseMac[2], 
-            baseMac[3], baseMac[4], baseMac[5]);
-  } else {
-    strcpy(out, "00:00:00:00:00:00");  // Error fallback
+  inline void blinkLED() {
+      static bool ledState = false;
+      digitalWrite(CONSENTIUM_LED_PIN, ledState);
+      ledState = !ledState;
   }
-}
 
-// Compare two dot-separated version strings numerically (e.g. "0.10" > "0.9", "1.0" == "1.0.0").
-// Returns > 0 if v1 > v2, < 0 if v1 < v2, and 0 if equal.
-int compareVersions(const char* v1, const char* v2) {
-  if (!v1 || !v2) return 0;
+  char randomChar(uint8_t num) {
+    if (num < 26) return 'A' + num;
+    if (num < 52) return 'a' + (num - 26);
+    return '0' + (num - 52);
+  }
 
-  // Skip leading whitespace and optional 'v'/'V' prefix
-  while (*v1 == ' ' || *v1 == '\t') v1++;
-  while (*v2 == ' ' || *v2 == '\t') v2++;
-  if (*v1 == 'v' || *v1 == 'V') v1++;
-  if (*v2 == 'v' || *v2 == 'V') v2++;
-
-  while (*v1 != '\0' || *v2 != '\0') {
-    long num1 = 0;
-    long num2 = 0;
-
-    if (*v1 >= '0' && *v1 <= '9') {
-      char* end1 = nullptr;
-      num1 = strtol(v1, &end1, 10);
-      v1 = end1;
+  inline void deviceMAC(char *out) {
+    uint8_t baseMac[6];
+    esp_err_t ret = esp_wifi_get_mac(WIFI_IF_STA, baseMac);
+    
+    if (ret == ESP_OK) {
+      sprintf(out, "%02X:%02X:%02X:%02X:%02X:%02X", 
+              baseMac[0], baseMac[1], baseMac[2], 
+              baseMac[3], baseMac[4], baseMac[5]);
+    } else {
+      strcpy(out, "00:00:00:00:00:00");  // Error fallback
     }
+  }
 
-    if (*v2 >= '0' && *v2 <= '9') {
-      char* end2 = nullptr;
-      num2 = strtol(v2, &end2, 10);
-      v2 = end2;
-    }
+  // Compare two dot-separated version strings numerically (e.g. "0.10" > "0.9", "1.0" == "1.0.0").
+  // Returns > 0 if v1 > v2, < 0 if v1 < v2, and 0 if equal.
+  int compareVersions(const char* v1, const char* v2) {
+    if (!v1 || !v2) return 0;
 
-    if (num1 != num2) {
-      return (num1 > num2) ? 1 : -1;
-    }
+    // Skip leading whitespace and optional 'v'/'V' prefix
+    while (*v1 == ' ' || *v1 == '\t') v1++;
+    while (*v2 == ' ' || *v2 == '\t') v2++;
+    if (*v1 == 'v' || *v1 == 'V') v1++;
+    if (*v2 == 'v' || *v2 == 'V') v2++;
 
-    // Compare any non-numeric characters within the current segment (e.g., pre-release tags)
-    while (*v1 != '\0' && *v1 != '.' && *v2 != '\0' && *v2 != '.') {
-      if (*v1 != *v2) {
-        return ((unsigned char)*v1 > (unsigned char)*v2) ? 1 : -1;
+    while (*v1 != '\0' || *v2 != '\0') {
+      long num1 = 0;
+      long num2 = 0;
+
+      if (*v1 >= '0' && *v1 <= '9') {
+        char* end1 = nullptr;
+        num1 = strtol(v1, &end1, 10);
+        v1 = end1;
       }
-      v1++;
-      v2++;
+
+      if (*v2 >= '0' && *v2 <= '9') {
+        char* end2 = nullptr;
+        num2 = strtol(v2, &end2, 10);
+        v2 = end2;
+      }
+
+      if (num1 != num2) {
+        return (num1 > num2) ? 1 : -1;
+      }
+
+      // Compare any non-numeric characters within the current segment (e.g., pre-release tags)
+      while (*v1 != '\0' && *v1 != '.' && *v2 != '\0' && *v2 != '.') {
+        if (*v1 != *v2) {
+          return ((unsigned char)*v1 > (unsigned char)*v2) ? 1 : -1;
+        }
+        v1++;
+        v2++;
+      }
+
+      // If one segment still has non-dot characters remaining, compare accordingly
+      if ((*v1 != '\0' && *v1 != '.') || (*v2 != '\0' && *v2 != '.')) {
+        if (*v1 == '\0' || *v1 == '.') return -1;
+        if (*v2 == '\0' || *v2 == '.') return 1;
+      }
+
+      if (*v1 == '.') v1++;
+      if (*v2 == '.') v2++;
     }
 
-    // If one segment still has non-dot characters remaining, compare accordingly
-    if ((*v1 != '\0' && *v1 != '.') || (*v2 != '\0' && *v2 != '.')) {
-      if (*v1 == '\0' || *v1 == '.') return -1;
-      if (*v2 == '\0' || *v2 == '.') return 1;
-    }
-
-    if (*v1 == '.') v1++;
-    if (*v2 == '.') v2++;
+    return 0;
   }
-
-  return 0;
-}
 
 } // namespace
 
@@ -106,12 +106,12 @@ void ConsentiumThingsDalton::startSensing(){
 
 double ConsentiumThingsDalton::readCurrentBus(int cpin){
   int16_t raw = ads_1.readADC_SingleEnded(cpin);
-  return ads_1.computeVolts(raw) * 1000 / 150.0; // Convert to mA assuming 150E resistor
+  return ads_1.computeVolts(raw) * 1000.0 / 150.0; // Convert to mA assuming 150E resistor
 }
 
 double ConsentiumThingsDalton::readVoltageBus(int vpin){
   int16_t raw = ads_2.readADC_SingleEnded(vpin);
-  return ads_2.computeVolts(raw) * 3.12766; // Account for voltage divider
+  return ads_2.computeVolts(raw) * (4.7/(4.7+10.0)); // Account for voltage divider
 }
 
 void ConsentiumThingsDalton::enableBatteryMonitoring(int pin, float refVoltage, float dividerRatio) {
@@ -119,7 +119,7 @@ void ConsentiumThingsDalton::enableBatteryMonitoring(int pin, float refVoltage, 
   this->batteryPin = pin;
   this->refVoltage = refVoltage;
   this->dividerRatio = dividerRatio;
-  pinMode(batteryPin, INPUT);
+  // pinMode(batteryPin, INPUT);
   Serial.println(F("[ConsentiumThings] Battery monitoring enabled."));
 }
 

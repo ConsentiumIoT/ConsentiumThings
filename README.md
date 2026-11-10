@@ -1,5 +1,7 @@
 # ConsentiumThings
 
+[![Compile Examples](https://github.com/ConsentiumIoT/ConsentiumThings/actions/workflows/compile.yml/badge.svg)](https://github.com/ConsentiumIoT/ConsentiumThings/actions/workflows/compile.yml)
+
 **Description:**  
 The **ConsentiumThingsDalton** project demonstrates how to use the ConsentiumThings IoT board to read sensor data and transmit it over HTTPS to the ConsentiumThings cloud. This library supports **ESP32**-class edge devices (e.g. ESP32, ESP32-C3, ESP32-S2, ESP32-S3).
 
